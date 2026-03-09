@@ -1,11 +1,11 @@
 package modele;
 
-abstract class Piece {
-    public String name;
-    public int color; // 0 : blanc | 1 : noir
+public abstract class Piece {
+    private String name;
+    private int color; // 0 : blanc | 1 : noir
 
-    public int posX;
-    public int posY;
+    private int posX;
+    private int posY;
 
     public Piece(int posX, int posY,  int color, String name) {
         this.posX = posX;
@@ -33,6 +33,13 @@ abstract class Piece {
 
     public int getPosY() {
         return posY;
+    }
+
+    public String  getName() {
+        return name;
+    }
+    public int getColor() {
+        return color;
     }
 
     public abstract void deplacer(int x1, int y1, int x2, int y2);

@@ -59,10 +59,11 @@ public class VC extends JFrame implements Observer {
     public void update(Observable o, Object arg) {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
+                Piece piece = jeu.getVal(i, j);
                 cases[i][j].removeAll();
                 cases[i][j].setBackground((i + j) % 2 == 0 ? new Color(118, 150, 86) : new Color(238, 238, 210));
-                if (!jeu.getVal(i, j).isEmpty()) {
-                    ImageIcon icon = new ImageIcon("assets/"+jeu.getVal(i, j)+".png");
+                if (piece != null) {
+                    ImageIcon icon = new ImageIcon("assets/" + (piece.getColor() == 0 ? "white" : "black") + "-" + piece.getName() + ".png");
                     Image img = icon.getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH);
 
                     cases[i][j].add(new JLabel(new ImageIcon(img)));
