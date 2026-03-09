@@ -5,8 +5,8 @@ package modele;
  */
 public class Queen extends Piece {
 
-    public Queen(int posX, int posY) {
-        super(posX, posY);
+    public Queen(int posX, int posY, int color) {
+        super(posX, posY, color, "queen");
     }
 
     @Override

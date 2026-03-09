@@ -1,13 +1,17 @@
 package modele;
 
 abstract class Piece {
+    public String name;
+    public int color; // 0 : blanc | 1 : noir
 
     public int posX;
     public int posY;
 
-    public Piece(int posX, int posY) {
+    public Piece(int posX, int posY,  int color, String name) {
         this.posX = posX;
         this.posY = posY;
+        this.color = color;
+        this.name = name;
     }
 
     public void setPosition(int posX, int posY) {

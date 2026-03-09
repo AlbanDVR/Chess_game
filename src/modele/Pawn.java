@@ -5,8 +5,8 @@ package modele;
  */
 public class Pawn extends Piece {
 
-    public Pawn(int posX, int posY) {
-        super(posX, posY);
+    public Pawn(int posX, int posY, int color) {
+        super(posX, posY, color, "pawn");
     }
 
     @Override

@@ -5,8 +5,8 @@ package modele;
  */
 public class Bishop extends Piece {
 
-    public Bishop(int posX, int posY) {
-        super(posX, posY);
+    public Bishop(int posX, int posY, int color) {
+        super(posX, posY, color, "bishop");
     }
 
     @Override
