@@ -8,33 +8,21 @@ import java.util.Observable;
 import java.util.Observer;
 
 public class VC extends JFrame implements Observer {
-    private modele.Jeu jeu;
+    private Jeu jeu;
     private JPanel[][] cases = new JPanel[8][8];
+    private Coup coup = new Coup();
 
     public static void main(String [] args){
-        modele.Jeu j = new Jeu();
+        Jeu j = new Jeu();
         VC vc = new VC(j);
         j.addObserver(vc);
         vc.setVisible(true);
-        new Thread(j).start();
+        vc.update(j, null);
+        j.run();
     }
 
-    public VC(modele.Jeu jeu) {
+    public VC(Jeu jeu) {
         super("Jeu d'échecs");
-
-        damier(jeu);
-
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(400,400);
-        setResizable(false);
-    }
-
-    @Override
-    public void update(Observable o, Object arg) {
-        damier(this.jeu);
-    }
-
-    public void damier(Jeu jeu){
         this.jeu = jeu;
 
         setLayout(new GridLayout(8,8));
@@ -43,33 +31,16 @@ public class VC extends JFrame implements Observer {
                 final int r = row;
                 final int c = col;
 
-                cases[row][col] = new JPanel();
-                add(cases[row][col]);
+                cases[r][c] = new JPanel();
+                add(cases[r][c]);
 
-                if ((row + col) % 2 == 0) {
-                    cases[row][col].setBackground(new Color(118, 150, 86));
-                }
-                else {
-                    cases[row][col].setBackground(new Color(238, 238, 210));
-                }
-
-                if (!jeu.getVal(row, col).isEmpty()) {
-                    ImageIcon icon = new ImageIcon("assets/"+jeu.getVal(row, col)+".png");
-                    Image img = icon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
-
-                    cases[row][col].add(new JLabel(new ImageIcon(img)));
-                }
-
-                cases[row][col].addMouseListener(new MouseAdapter() {
-                    Coup coup = new Coup();
-
+                cases[r][c].addMouseListener(new MouseAdapter() {
                     @Override
                     public void mouseClicked(MouseEvent e) {
-
-                        if(!coup.ready){
+                        if (!coup.ready) {
                             coup.setPos2(r, c);
-                        }
-                        else{
+                            cases[r][c].setBackground(Color.YELLOW);
+                        } else {
                             coup.setPos1(r, c);
                             jeu.set(coup);
                             coup.resetCoup();
@@ -78,7 +49,27 @@ public class VC extends JFrame implements Observer {
                 });
             }
         }
+
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(400,400);
+        setResizable(false);
     }
 
+    @Override
+    public void update(Observable o, Object arg) {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                cases[i][j].removeAll();
+                cases[i][j].setBackground((i + j) % 2 == 0 ? new Color(118, 150, 86) : new Color(238, 238, 210));
+                if (!jeu.getVal(i, j).isEmpty()) {
+                    ImageIcon icon = new ImageIcon("assets/"+jeu.getVal(i, j)+".png");
+                    Image img = icon.getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH);
 
+                    cases[i][j].add(new JLabel(new ImageIcon(img)));
+                }
+            }
+        }
+        revalidate();
+        repaint();
+    }
 }

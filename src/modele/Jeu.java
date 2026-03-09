@@ -53,20 +53,24 @@ public class Jeu extends Observable implements Runnable {
         if(currentPlayer == 0){
             this.currentPlayer = 1;
         }
-        if(currentPlayer == 1){
+        else {
             this.currentPlayer = 0;
         }
         return liste[currentPlayer];
     }
 
     public void appliquerCoup(Coup c){
-
+        int[] pos1 = c.getPos1();
+        int[] pos2 = c.getPos2();
+        this.positions[pos1[0]][pos1[1]] = this.positions[pos2[0]][pos2[1]];
+        this.positions[pos2[0]][pos2[1]] = "";
     }
 
     public void set(Coup c){
         nextC = c;
 
         synchronized (this){
+            appliquerCoup(nextC);
             setChanged();
             notifyObservers();
         }

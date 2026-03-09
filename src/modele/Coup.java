@@ -17,6 +17,7 @@ public class Coup {
     public void setPos2(int i, int j){
         this.pos2[0] = i;
         this.pos2[1] = j;
+        this.ready = true;
     }
 
     public int[] getPos1(){
@@ -28,8 +29,6 @@ public class Coup {
     }
 
     public void resetCoup(){
-        pos1 = new int[2];
-        pos2 = new int[2];
         ready = false;
     }
 
