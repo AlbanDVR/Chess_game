@@ -5,12 +5,12 @@ package modele;
  */
 public class King extends Piece {
 
-    public King(int posX, int posY, int color) {
-        super(posX, posY, color, "king");
+    public King(int color) {
+        super(color);
     }
 
     @Override
-    public void deplacer(Coup coup, Jeu jeu) {
+    public void move(Coup coup, Jeu jeu) {
         // to do
     }
 }

@@ -5,12 +5,12 @@ package modele;
  */
 public class Bishop extends Piece {
 
-    public Bishop(int posX, int posY, int color) {
-        super(posX, posY, color, "bishop");
+    public Bishop(int color) {
+        super(color);
     }
 
     @Override
-    public void deplacer(Coup coup, Jeu jeu) {
+    public void move(Coup coup, Jeu jeu) {
         // to do
     }
 }
