@@ -57,20 +57,18 @@ public class Jeu extends Observable implements Runnable {
         nextC = c;
 
         synchronized (this){
-            if(!isAvailable(nextC.getDep()[0], nextC.getDep()[1])){
-                positions[nextC.getDep()[0]][nextC.getDep()[1]].move(nextC, this);
-            }
+            this.plateau.getPositions()[nextC.getDep()[0]][nextC.getDep()[1]].getPiece().move(nextC, this);
             setChanged();
             notifyObservers();
         }
 
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                if(positions[i][j] == null){
+                if(this.plateau.getPositions()[i][j] == null){
                     System.out.print(" x ");
                 }
                 else{
-                    System.out.print(positions[i][j].getName());
+                    System.out.print(this.plateau.getPositions()[i][j].getPiece().getName());
                 }
             }
             System.out.println();
@@ -82,12 +80,9 @@ public class Jeu extends Observable implements Runnable {
     }
 
     public void setPositions(Coup c){
-        Piece piece = this.positions[c.getDep()[0]][c.getDep()[1]];
-        this.positions[c.getDep()[0]][c.getDep()[1]] = null;
-        this.positions[c.getArr()[0]][c.getArr()[1]] = piece;
-    }
-
-    public boolean isAvailable(int x, int y){
-        return positions[x][y] == null;
+        Case dep = this.plateau.getCase(c.getDep()[0],  c.getDep()[1]);
+        Case arr =  this.plateau.getCase(c.getArr()[0],  c.getArr()[1]);
+        arr.setPiece(dep.getPiece());
+        dep.setPiece(null);
     }
 }

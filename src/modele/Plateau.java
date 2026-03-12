@@ -29,6 +29,10 @@ public class Plateau {
         return null;
     }
 
+    public Case getCase(int x, int y) {
+        return this.positions[x][y];
+    }
+
     public Case getCaseAdj(Case c, Direction dir) {
         int i, j = 0;
         for (i = 0; i < positions.length; i++) {
