@@ -78,6 +78,10 @@ public class Jeu extends Observable implements Runnable {
         }
     }
 
+    public int getCurrentPlayer() {
+        return currentPlayer;
+    }
+
     public void setPositions(Coup c){
         Piece piece = this.positions[c.getDep()[0]][c.getDep()[1]];
         this.positions[c.getDep()[0]][c.getDep()[1]] = null;
