@@ -18,4 +18,11 @@ public enum Direction {
         dy = _dy;
     }
 
+    public int getDx(){
+        return dx;
+    }
+    public int getDy(){
+        return dy;
+    }
+
 }

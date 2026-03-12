@@ -58,9 +58,10 @@ public class VC extends JFrame implements Observer {
 
     @Override
     public void update(Observable o, Object arg) {
+        Case[][] positions = jeu.getPlateau().getPositions();
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                Piece piece = jeu.getVal(i, j);
+                Piece piece = positions[i][j].getPiece();
                 cases[i][j].removeAll();
                 cases[i][j].setBackground((i + j) % 2 == 0 ? new Color(118, 150, 86) : new Color(238, 238, 210));
                 if (piece != null) {

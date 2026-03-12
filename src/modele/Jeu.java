@@ -8,7 +8,6 @@ public class Jeu extends Observable implements Runnable {
 
     private Joueur[] liste = new Joueur[2];
     private int currentPlayer = 0;
-    private Piece[][] positions;
     private Plateau plateau;
     public Coup nextC;
 
@@ -40,8 +39,8 @@ public class Jeu extends Observable implements Runnable {
         return true;
     }
 
-    public Piece getVal(int i, int j) {
-        return positions[i][j];
+    public Plateau getPlateau() {
+        return plateau;
     }
 
     public Joueur getJoueurSuivant(){
