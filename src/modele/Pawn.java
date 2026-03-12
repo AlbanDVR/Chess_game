@@ -10,7 +10,34 @@ public class Pawn extends Piece {
     }
 
     @Override
-    public void deplacer(int x1, int y1, int x2, int y2) {
-        // to do
+    public void deplacer(Coup coup, Jeu jeu) {
+        // Si la place est libre
+        if(jeu.isAvailable(coup.getArr()[0], coup.getArr()[1])) {
+            // Si le pion peut le faire
+            if(getPosX() == coup.getArr()[1]) {
+                // S'il est blanc
+                if(this.getColor() == 0){
+                    if(getPosY() == 6 && (getPosY()-coup.getArr()[0] <= 2)){
+                        this.setPosition(getPosX(), coup.getArr()[1]);
+                        jeu.setPositions(coup);
+                    }
+                    else if(getPosY()-coup.getArr()[0] <= 1){
+                        this.setPosition(getPosX(), coup.getArr()[1]);
+                        jeu.setPositions(coup);
+                    }
+                }
+                // S'il est noir
+                else {
+                    if(getPosY() == 1 && (getPosY()-coup.getArr()[0] <= -2)){
+                        this.setPosition(getPosX(), coup.getArr()[1]);
+                        jeu.setPositions(coup);
+                    }
+                    else if(getPosY()-coup.getArr()[0] <= -1){
+                        this.setPosition(getPosX(), coup.getArr()[1]);
+                        jeu.setPositions(coup);
+                    }
+                }
+            }
+        }
     }
 }

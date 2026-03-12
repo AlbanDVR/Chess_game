@@ -37,11 +37,12 @@ public class VC extends JFrame implements Observer {
                 cases[r][c].addMouseListener(new MouseAdapter() {
                     @Override
                     public void mouseClicked(MouseEvent e) {
+                        System.out.printf("r : %d,  c : %d\n", r, c);
                         if (!coup.ready) {
-                            coup.setPos2(r, c);
+                            coup.setDep(r, c);
                             cases[r][c].setBackground(Color.YELLOW);
                         } else {
-                            coup.setPos1(r, c);
+                            coup.setArr(r, c);
                             jeu.set(coup);
                             coup.resetCoup();
                         }

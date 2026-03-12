@@ -1,5 +1,7 @@
 package modele;
 
+import javax.swing.*;
+import java.awt.*;
 import java.util.Observable;
 
 public class Jeu extends Observable implements Runnable {
@@ -19,8 +21,8 @@ public class Jeu extends Observable implements Runnable {
                 {null, null, null, null, null, null, null, null},
                 {null, null, null, null, null, null, null, null},
                 {null, null, null, null, null, null, null, null},
-                {new Pawn(0, 1, 0), new Pawn(1, 1, 0), new Pawn(2, 1, 0), new Pawn(3, 1, 0), new Pawn(4, 1, 0), new Pawn(5, 1, 0), new Pawn(6, 1, 0), new Pawn(7, 1, 0)},
-                {new Rook(0, 0, 0), new Knight(1, 0, 0), new Bishop(2, 0, 0), new King(3, 0, 0), new Queen(4, 0, 0), new Bishop(5, 0, 0), new Knight(6, 0, 0), new Rook(7, 0, 0)},
+                {new Pawn(0, 6, 0), new Pawn(1, 6, 0), new Pawn(2, 6, 0), new Pawn(3, 6, 0), new Pawn(4, 6, 0), new Pawn(5, 6, 0), new Pawn(6, 6, 0), new Pawn(7, 6, 0)},
+                {new Rook(0, 7, 0), new Knight(1, 7, 0), new Bishop(2, 7, 0), new King(3, 7, 0), new Queen(4, 7, 0), new Bishop(5, 7, 0), new Knight(6, 7, 0), new Rook(7, 7, 0)},
         };
 
         liste[0] = new Joueur(this);
@@ -41,12 +43,16 @@ public class Jeu extends Observable implements Runnable {
         while(!partieTerminee()){
             Joueur joueur = getJoueurSuivant();
             Coup c = joueur.getCoup();
-            appliquerCoup(c);
+            setPositions(c);
         }
     }
 
     public boolean partieTerminee(){
         return true;
+    }
+
+    public Piece getVal(int i, int j) {
+        return positions[i][j];
     }
 
     public Joueur getJoueurSuivant(){
@@ -59,27 +65,37 @@ public class Jeu extends Observable implements Runnable {
         return liste[currentPlayer];
     }
 
-    public void appliquerCoup(Coup c){
-        int[] pos1 = c.getPos1();
-        int[] pos2 = c.getPos2();
-        this.positions[pos1[0]][pos1[1]] = this.positions[pos2[0]][pos2[1]];
-        this.positions[pos2[0]][pos2[1]] = null;
-    }
-
     public void set(Coup c){
         nextC = c;
 
         synchronized (this){
-            appliquerCoup(nextC);
+            if(!isAvailable(nextC.getDep()[0], nextC.getDep()[1])){
+                positions[nextC.getDep()[0]][nextC.getDep()[1]].deplacer(nextC, this);
+            }
             setChanged();
             notifyObservers();
         }
+
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if(positions[i][j] == null){
+                    System.out.print(" x ");
+                }
+                else{
+                    System.out.print(positions[i][j].getName());
+                }
+            }
+            System.out.println();
+        }
     }
 
-    public void switchPosition(int i, int j){
+    public void setPositions(Coup c){
+        Piece piece = this.positions[c.getDep()[0]][c.getDep()[1]];
+        this.positions[c.getDep()[0]][c.getDep()[1]] = null;
+        this.positions[c.getArr()[0]][c.getArr()[1]] = piece;
     }
 
-    public Piece getVal(int i, int j) {
-        return positions[i][j];
+    public boolean isAvailable(int x, int y){
+        return positions[x][y] == null;
     }
 }

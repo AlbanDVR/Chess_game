@@ -10,7 +10,7 @@ public class Rook extends Piece {
     }
 
     @Override
-    public void deplacer(int x1, int y1, int x2, int y2) {
-        // to do
+    public void deplacer(Coup coup, Jeu jeu) {
+        //to do
     }
 }

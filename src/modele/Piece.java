@@ -42,6 +42,6 @@ public abstract class Piece {
         return color;
     }
 
-    public abstract void deplacer(int x1, int y1, int x2, int y2);
+    public abstract void deplacer(Coup coup, Jeu jeu);
 
 }
