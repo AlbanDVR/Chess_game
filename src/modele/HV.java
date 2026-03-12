@@ -15,17 +15,51 @@ public class HV extends DCA{
     @Override
     public ArrayList<Case> getMesCasesAccessibles(int currentPlayer, Case currentCase) {
         ArrayList<Case> caseAccessible = new ArrayList<>();
-
         Plateau plateau = getPlateau();
 
-        while(plateau.getCaseAdj(currentCase, Direction.DROITE) != null || plateau.getCaseAdj(currentCase, Direction.DROITE).getPiece().getColor() == currentPlayer) {
+        // Direction DROITE
+        caseAccessible.addAll(explorerDirection(currentCase, Direction.DROITE, currentPlayer, plateau));
 
-            caseAccessible.add(plateau.getCaseAdj(currentCase, Direction.DROITE));
+        // Direction GAUCHE
+        caseAccessible.addAll(explorerDirection(currentCase, Direction.GAUCHE, currentPlayer, plateau));
 
-            currentCase = plateau.getCaseAdj(currentCase, Direction.DROITE);
-        }
+        // Direction HAUT
+        caseAccessible.addAll(explorerDirection(currentCase, Direction.HAUT, currentPlayer, plateau));
 
+        // Direction BAS
+        caseAccessible.addAll(explorerDirection(currentCase, Direction.BAS, currentPlayer, plateau));
 
         return caseAccessible;
+    }
+
+    private ArrayList<Case> explorerDirection(Case startCase, Direction direction, int currentPlayer, Plateau plateau) {
+        ArrayList<Case> cases = new ArrayList<>();
+        Case currentCase = startCase;
+
+        while (true) {
+            Case nextCase = plateau.getCaseAdj(currentCase, direction);
+
+            // Si pas de case adjacente, on arrête
+            if (nextCase == null) {
+                break;
+            }
+
+            // Si la case est vide, on l'ajoute et on continue
+            if (nextCase.getPiece() == null) {
+                cases.add(nextCase);
+                currentCase = nextCase;
+            }
+            // Si c'est une pièce de l'adversaire, on l'ajoute et on arrête
+            else if (nextCase.getPiece().getColor() != currentPlayer) {
+                cases.add(nextCase);
+                break;
+            }
+            // Si c'est une pièce du même joueur, on arrête sans l'ajouter
+            else {
+                break;
+            }
+        }
+
+        return cases;
     }
 }

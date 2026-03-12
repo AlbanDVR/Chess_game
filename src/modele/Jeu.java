@@ -64,15 +64,20 @@ public class Jeu extends Observable implements Runnable {
 
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                if(this.plateau.getPositions()[i][j] == null){
+                if(this.plateau.getCase(i, j).getPiece() == null){
                     System.out.print(" x ");
                 }
                 else{
-                    System.out.print(this.plateau.getPositions()[i][j].getPiece().getName());
+                    System.out.print(this.plateau.getCase(i, j).getPiece().getName());
                 }
             }
             System.out.println();
         }
+    }
+
+    public void updateObservers() {
+        setChanged();
+        notifyObservers();
     }
 
     public int getCurrentPlayer() {
