@@ -11,11 +11,6 @@ public class Bishop extends Piece {
 
     @Override
     public void chargerDCA(Case c, Plateau p) {
-        this.setDCA(new Diag(c, p, true, true));
-    }
-
-    @Override
-    public void move(Coup coup, Jeu jeu) {
-        // to do
+        this.setDCA(new Diag(c, p));
     }
 }

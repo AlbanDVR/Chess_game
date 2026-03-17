@@ -11,11 +11,6 @@ public class King extends Piece {
 
     @Override
     public void chargerDCA(Case c, Plateau p) {
-        this.setDCA(new HV(new Diag(c, p, 1, true, true), c, p, 1, true, true));
-    }
-
-    @Override
-    public void move(Coup coup, Jeu jeu) {
-        // to do
+        this.setDCA(new HV(new Diag(c, p, 1), c, p, 1));
     }
 }

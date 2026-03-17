@@ -28,7 +28,4 @@ public abstract class Piece {
     }
 
     public abstract void chargerDCA(Case c, Plateau p);
-
-    public abstract void move(Coup coup, Jeu jeu);
-
 }

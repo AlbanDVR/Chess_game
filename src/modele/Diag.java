@@ -7,11 +7,18 @@ public class Diag extends DCA{
     private boolean peutAvancer;
     private boolean peutCapturer;
 
-    public Diag(Case currentCase, Plateau plateau, boolean peutAvancer, boolean peutCapturer) {
+    public Diag(Case currentCase, Plateau plateau) {
         super(currentCase, plateau);
         this.portee = 8; // tout
-        this.peutAvancer = peutAvancer;
-        this.peutCapturer = peutCapturer;
+        this.peutAvancer = true;
+        this.peutCapturer = true;
+    }
+
+    public Diag(Case currentCase, Plateau plateau, int portee) {
+        super(currentCase, plateau);
+        this.portee = portee;
+        this.peutAvancer = true;
+        this.peutCapturer = true;
     }
 
     public Diag(Case currentCase, Plateau plateau, int portee, boolean peutAvancer, boolean peutCapturer) {

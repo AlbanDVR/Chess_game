@@ -7,6 +7,13 @@ public class HV extends DCA{
     private boolean peutAvancer;
     private boolean peutCapturer;
 
+    public HV(Case currentCase, Plateau plateau) {
+        super(currentCase, plateau);
+        this.portee = 8; // tout
+        this.peutAvancer = true;
+        this.peutCapturer = true;
+    }
+
     public HV(Case currentCase, Plateau plateau, boolean peutAvancer, boolean peutCapturer) {
         super(currentCase, plateau);
         this.portee = 8; // tout
@@ -14,11 +21,18 @@ public class HV extends DCA{
         this.peutCapturer = peutCapturer;
     }
 
-    public HV(DCA base, Case currentCase, Plateau plateau, boolean peutAvancer, boolean peutCapturer) {
+    public HV(DCA base, Case currentCase, Plateau plateau) {
         super(base, currentCase, plateau);
         this.portee = 8; // tout
-        this.peutAvancer = peutAvancer;
-        this.peutCapturer = peutCapturer;
+        this.peutAvancer = true;
+        this.peutCapturer = true;
+    }
+
+    public HV(DCA base, Case currentCase, Plateau plateau, int portee) {
+        super(base, currentCase, plateau);
+        this.portee = portee;
+        this.peutAvancer = true;
+        this.peutCapturer = true;
     }
 
     public HV(DCA base, Case currentCase, Plateau plateau, int portee, boolean peutAvancer, boolean peutCapturer) {

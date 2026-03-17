@@ -13,9 +13,4 @@ public class Knight extends Piece {
     public void chargerDCA(Case c, Plateau p) {
         this.setDCA(new SautCheval(c, p));
     }
-
-    @Override
-    public void move(Coup coup, Jeu jeu) {
-        // to do
-    }
 }
