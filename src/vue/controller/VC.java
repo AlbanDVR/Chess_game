@@ -49,16 +49,15 @@ public class VC extends JFrame implements Observer {
                 cases[r][c].addMouseListener(new MouseAdapter() {
                     @Override
                     public void mouseClicked(MouseEvent e) {
-                        if (!coup.ready) {
-                            coup.setDep(r, c);
-
-                            // Récupére les cases accessibles
+                        if(!coup.ready) {
                             Piece piece = jeu.getPlateau().getCase(r, c).getPiece();
 
-                            if (piece != null) {
+                            if(piece != null && piece.getColor() == jeu.getCurrentPlayer()) {
+                                coup.setDep(r, c);
                                 cases[r][c].setBackground(Color.YELLOW);
-                                piece.chargerDCA(jeu.getPlateau().getCase(r, c), jeu.getPlateau());
 
+                                // Récupére les cases accessibles
+                                piece.chargerDCA(jeu.getPlateau().getCase(r, c), jeu.getPlateau());
                                 if (piece.getDCA() != null) {
                                     casesAccessibles = piece.getDCA().getCasesAccessibles(jeu);
                                 }

@@ -25,6 +25,16 @@ public class Jeu extends Observable implements Runnable {
         }
     }
 
+    public void set(Coup c){
+        nextC = c;
+
+        synchronized (this){
+            setPositions(c);
+            switchJoueur();
+            updateObservers();
+        }
+    }
+
     public void jouerPartie() throws InterruptedException {
         while(!partieTerminee()){
             Joueur joueur = getJoueurSuivant();
@@ -51,13 +61,8 @@ public class Jeu extends Observable implements Runnable {
         return liste[currentPlayer];
     }
 
-    public void set(Coup c){
-        nextC = c;
-
-        synchronized (this){
-            setPositions(c);
-            updateObservers();
-        }
+    public void switchJoueur(){
+        this.currentPlayer = (this.currentPlayer == 0) ? 1 : 0;
     }
 
     public int getCurrentPlayer() {
