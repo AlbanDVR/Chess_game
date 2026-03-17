@@ -10,7 +10,7 @@ public class Plateau {
                 {new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null)},
                 {new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null)},
                 {new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null)},
-                {new Case(new Pawn(0)), new Case(new Pawn(0)), new Case(new Pawn(0)), new Case(new Pawn(0)), new Case(new Pawn(0)), new Case(new Pawn(0)), new Case(new Pawn(0)), new Case(new Pawn(0))},
+                {new Case(null), new Case(new Pawn(0)), new Case(new Pawn(0)), new Case(new Pawn(0)), new Case(new Pawn(0)), new Case(new Pawn(0)), new Case(new Pawn(0)), new Case(new Pawn(0))},
                 {new Case(new Rook(0)), new Case(new Knight(0)), new Case(new Bishop(0)), new Case(new King(0)), new Case(new Queen(0)), new Case(new Bishop(0)), new Case(new Knight(0)), new Case(new Rook(0))}};
     }
 
@@ -44,8 +44,22 @@ public class Plateau {
                     break;
                 }
             }
+            if (foundI != -1) break;
         }
 
-        return positions[foundI + dir.getDx()][foundJ + dir.getDy()];
+        // Si la case n'est pas trouvée
+        if (foundI == -1) return null;
+
+        // On calcul la case adjacente
+        int newI = foundI + dir.getDx();
+        int newJ = foundJ + dir.getDy();
+
+        // On vérifie qu'elle est dans le plateau, notamment pour les pièces proches du bord
+        if (newI >= 0 && newI < 8 && newJ >= 0 && newJ < 8) {
+            return positions[newI][newJ];
+        }
+
+        // Si on sort du plateau
+        return null;
     }
 }

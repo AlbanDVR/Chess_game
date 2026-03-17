@@ -3,13 +3,16 @@ package modele;
 import java.util.ArrayList;
 
 public class HV extends DCA{
+    private int portee;
 
     public HV(Case currentCase, Plateau plateau) {
         super(currentCase, plateau);
+        this.portee = 8; // tout
     }
 
-    public HV(DCA base, Case currentCase, Plateau plateau) {
-        super(base, currentCase, plateau);
+    public HV(Case currentCase, Plateau plateau, int portee) {
+        super(currentCase, plateau);
+        this.portee = portee;
     }
 
     @Override
@@ -19,25 +22,26 @@ public class HV extends DCA{
         Plateau plateau = getPlateau();
 
         // Direction DROITE
-        caseAccessible.addAll(explorerDirection(currentCase, Direction.DROITE, currentPlayer, plateau));
+        caseAccessible.addAll(explorerDirection(currentCase, Direction.DROITE, currentPlayer, plateau, portee));
 
         // Direction GAUCHE
-        caseAccessible.addAll(explorerDirection(currentCase, Direction.GAUCHE, currentPlayer, plateau));
+        caseAccessible.addAll(explorerDirection(currentCase, Direction.GAUCHE, currentPlayer, plateau, portee));
 
         // Direction HAUT
-        caseAccessible.addAll(explorerDirection(currentCase, Direction.HAUT, currentPlayer, plateau));
+        caseAccessible.addAll(explorerDirection(currentCase, Direction.HAUT, currentPlayer, plateau, portee));
 
         // Direction BAS
-        caseAccessible.addAll(explorerDirection(currentCase, Direction.BAS, currentPlayer, plateau));
+        caseAccessible.addAll(explorerDirection(currentCase, Direction.BAS, currentPlayer, plateau, portee));
 
         return caseAccessible;
     }
 
-    private ArrayList<Case> explorerDirection(Case startCase, Direction direction, int currentPlayer, Plateau plateau) {
+    private ArrayList<Case> explorerDirection(Case startCase, Direction direction, int currentPlayer, Plateau plateau, int porteeMax) {
         ArrayList<Case> cases = new ArrayList<>();
         Case currentCase = startCase;
 
-        while (true) {
+        int pas = 0;
+        while (pas < porteeMax) {
             Case nextCase = plateau.getCaseAdj(currentCase, direction);
 
             // Si pas de case adjacente, on arrête
@@ -59,6 +63,8 @@ public class HV extends DCA{
             else {
                 break;
             }
+
+            pas++;
         }
 
         return cases;

@@ -74,11 +74,6 @@ public class Jeu extends Observable implements Runnable {
         }
     }
 
-    public void updateObservers() {
-        setChanged();
-        notifyObservers();
-    }
-
     public int getCurrentPlayer() {
         return currentPlayer;
     }
