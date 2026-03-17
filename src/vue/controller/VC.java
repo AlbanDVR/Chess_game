@@ -1,9 +1,19 @@
 package vue.controller;
 
-import modele.*;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import modele.Case;
+import modele.Coup;
+import modele.Jeu;
+import modele.Piece;
+
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import java.awt.Color;
+import java.awt.GridLayout;
+import java.awt.Image;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;

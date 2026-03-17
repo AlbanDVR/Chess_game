@@ -1,7 +1,5 @@
 package modele;
 
-import javax.swing.*;
-import java.awt.*;
 import java.util.Observable;
 
 public class Jeu extends Observable implements Runnable {
