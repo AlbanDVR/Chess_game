@@ -58,8 +58,7 @@ public class Jeu extends Observable implements Runnable {
 
         synchronized (this){
             this.plateau.getPositions()[nextC.getDep()[0]][nextC.getDep()[1]].getPiece().move(nextC, this);
-            setChanged();
-            notifyObservers();
+            updateObservers();
         }
 
         for (int i = 0; i < 8; i++) {
@@ -90,4 +89,10 @@ public class Jeu extends Observable implements Runnable {
         arr.setPiece(dep.getPiece());
         dep.setPiece(null);
     }
+
+    public void updateObservers() {
+        setChanged();
+        notifyObservers();
+    }
+
 }

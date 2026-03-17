@@ -1,7 +1,6 @@
 package vue.controller;
 
 import modele.*;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -13,7 +12,7 @@ public class VC extends JFrame implements Observer {
     private Jeu jeu;
     private JPanel[][] cases = new JPanel[8][8];
     private Coup coup = new Coup();
-    private ArrayList<Case> casesAccessibles = new ArrayList<>();  // ← AJOUTER
+    private ArrayList<Case> casesAccessibles = new ArrayList<>();
 
     public static void main(String[] args) {
         Jeu j = new Jeu();
@@ -40,21 +39,22 @@ public class VC extends JFrame implements Observer {
                 cases[r][c].addMouseListener(new MouseAdapter() {
                     @Override
                     public void mouseClicked(MouseEvent e) {
-                        System.out.printf("r : %d,  c : %d\n", r, c);
                         if (!coup.ready) {
                             coup.setDep(r, c);
                             cases[r][c].setBackground(Color.YELLOW);
 
-                            // Récupérer la pièce et ses cases accessibles
+                            // Récupére les cases accessibles
                             Piece piece = jeu.getPlateau().getCase(r, c).getPiece();
-                            System.out.println("Pièce cliquée : " + (piece != null ? piece.getName() : "null"));  // DEBUG
 
-                            if (piece != null && piece.getDCA() != null) {
-                                casesAccessibles = piece.getDCA().getCasesAccessibles(jeu);
-                                System.out.println("Cases accessibles trouvées : " + casesAccessibles.size());  // DEBUG
-                            } else {
-                                System.out.println("DCA est null !");  // DEBUG
-                            }
+                            if (piece != null) {
+
+                                if (piece instanceof Pawn || piece instanceof Queen) {
+                                    piece.setDCA(new HV(jeu.getPlateau().getCase(r, c), jeu.getPlateau()));
+                                }
+
+                                if (piece.getDCA() != null) {
+                                    casesAccessibles = piece.getDCA().getCasesAccessibles(jeu);
+                                }                            }
 
                             // Notifier les observateurs pour redessiner
                             jeu.updateObservers();
@@ -70,37 +70,35 @@ public class VC extends JFrame implements Observer {
             }
         }
 
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(400,400);
+        setResizable(false);
+    }
 
+    @Override
+    public void update(Observable o, Object arg) {
 
-    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        Case[][] positions = jeu.getPlateau().getPositions();
 
-    setSize(400,400);
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                Piece piece = positions[i][j].getPiece();
+                cases[i][j].removeAll();
+                cases[i][j].setBackground((i + j) % 2 == 0 ? new Color(118, 150, 86) : new Color(238, 238, 210));
 
-    setResizable(false);
-}
+                if (casesAccessibles.contains(positions[i][j])) {
+                    cases[i][j].setBackground(new Color(255, 211, 192));
+                }
 
-@Override
-public void update(Observable o, Object arg) {
-    Case[][] positions = jeu.getPlateau().getPositions();
-    for (int i = 0; i < 8; i++) {
-        for (int j = 0; j < 8; j++) {
-            Piece piece = positions[i][j].getPiece();
-            cases[i][j].removeAll();
-            cases[i][j].setBackground((i + j) % 2 == 0 ? new Color(118, 150, 86) : new Color(238, 238, 210));
+                if (piece != null) {
+                    ImageIcon icon = new ImageIcon("assets/" + (piece.getColor() == 0 ? "white" : "black") + "-" + piece.getName() + ".png");
+                    Image img = icon.getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH);
 
-            // ← AJOUTER : Colorer les cases accessibles en rouge
-            if (casesAccessibles.contains(positions[i][j])) {
-                cases[i][j].setBackground(Color.RED);
-            }
-
-            if (piece != null) {
-                ImageIcon icon = new ImageIcon("assets/" + (piece.getColor() == 0 ? "white" : "black") + "-" + piece.getName() + ".png");
-                Image img = icon.getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH);
-                cases[i][j].add(new JLabel(new ImageIcon(img)));
+                    cases[i][j].add(new JLabel(new ImageIcon(img)));
+                }
             }
         }
+        revalidate();
+        repaint();
     }
-    revalidate();
-    repaint();
-}
 }

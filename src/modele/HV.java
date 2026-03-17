@@ -15,6 +15,7 @@ public class HV extends DCA{
     @Override
     public ArrayList<Case> getMesCasesAccessibles(int currentPlayer, Case currentCase) {
         ArrayList<Case> caseAccessible = new ArrayList<>();
+
         Plateau plateau = getPlateau();
 
         // Direction DROITE

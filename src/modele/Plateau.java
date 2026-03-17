@@ -10,19 +10,8 @@ public class Plateau {
                 {new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null)},
                 {new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null)},
                 {new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null)},
-                {new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null)},
+                {new Case(new Pawn(0)), new Case(new Pawn(0)), new Case(new Pawn(0)), new Case(new Pawn(0)), new Case(new Pawn(0)), new Case(new Pawn(0)), new Case(new Pawn(0)), new Case(new Pawn(0))},
                 {new Case(new Rook(0)), new Case(new Knight(0)), new Case(new Bishop(0)), new Case(new King(0)), new Case(new Queen(0)), new Case(new Bishop(0)), new Case(new Knight(0)), new Case(new Rook(0))}};
-
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                Piece piece = positions[i][j].getPiece();
-                if (piece != null) {
-                    if (piece.getName().equals("Rook") || piece.getName().equals("Queen")) {
-                        piece.setDCA(new HV(positions[i][j], this));
-                    }
-                }
-            }
-        }
     }
 
     public Case[][] getPositions() {
@@ -45,27 +34,18 @@ public class Plateau {
     }
 
     public Case getCaseAdj(Case c, Direction dir) {
+        // On cherche la case de départ
         int foundI = -1, foundJ = -1;
         for (int i = 0; i < positions.length; i++) {
             for (int j = 0; j < positions[i].length; j++) {
-                if (positions[i][j] == c) {  // ✅ Utiliser == pour la comparaison de références
+                if (positions[i][j] == c) {
                     foundI = i;
                     foundJ = j;
                     break;
                 }
             }
-            if (foundI != -1) break;
         }
 
-        if (foundI == -1) return null;  // Case non trouvée
-
-        int newI = foundI + dir.getDx();
-        int newJ = foundJ + dir.getDy();
-
-        // ✅ Vérifier les bornes
-        if (newI >= 0 && newI < 8 && newJ >= 0 && newJ < 8) {
-            return positions[newI][newJ];
-        }
-        return null;
+        return positions[foundI + dir.getDx()][foundJ + dir.getDy()];
     }
 }
