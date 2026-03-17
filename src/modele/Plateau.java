@@ -29,6 +29,17 @@ public class Plateau {
         return null;
     }
 
+    public int[] getCoord(Case target){
+        for (int i = 0; i < positions.length; i++) {
+            for (int j = 0; j < positions[i].length; j++) {
+                if (positions[i][j] == target) {
+                    return new int[]{j, i};
+                }
+            }
+        }
+        return null;
+    }
+
     public Case getCase(int x, int y) {
         return this.positions[x][y];
     }

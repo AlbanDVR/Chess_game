@@ -11,7 +11,14 @@ public class Pawn extends Piece {
 
     @Override
     public void chargerDCA(Case c, Plateau p) {
-        this.setDCA(new HV(c, p, 1));
+        // Calcul de la porter du spawn
+        int y = p.getCoord(c)[1];
+        int portee = 1;
+        if ((this.getColor() == 0 && y == 6) || (this.getColor() == 1 && y == 1)) {
+            portee = 2;
+        }
+
+        this.setDCA(new HV(new Diag(c, p, 1, false, true), c, p, portee, true, false));
     }
 
     @Override
