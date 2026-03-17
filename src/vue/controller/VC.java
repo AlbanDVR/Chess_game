@@ -41,27 +41,37 @@ public class VC extends JFrame implements Observer {
                     public void mouseClicked(MouseEvent e) {
                         if (!coup.ready) {
                             coup.setDep(r, c);
-                            cases[r][c].setBackground(Color.YELLOW);
 
                             // Récupére les cases accessibles
                             Piece piece = jeu.getPlateau().getCase(r, c).getPiece();
 
                             if (piece != null) {
-
+                                cases[r][c].setBackground(Color.YELLOW);
                                 piece.chargerDCA(jeu.getPlateau().getCase(r, c), jeu.getPlateau());
 
                                 if (piece.getDCA() != null) {
                                     casesAccessibles = piece.getDCA().getCasesAccessibles(jeu);
-                                }                          }
+                                }
+                            }
 
-                            // Notifier les observateurs pour redessiner
+                            // Redessiner
                             jeu.updateObservers();
 
                         } else {
-                            coup.setArr(r, c);
-                            jeu.set(coup);
+                            Case caseArrivee = jeu.getPlateau().getCase(r, c);
+
+                            // Si il est autorisé
+                            if (casesAccessibles.contains(caseArrivee)) {
+                                coup.setArr(r, c);
+                                jeu.set(coup);
+                            }
+
+                            // Reset de tous
                             coup.resetCoup();
                             casesAccessibles.clear();
+
+                            // Redessiner
+                            jeu.updateObservers();
                         }
                     }
                 });

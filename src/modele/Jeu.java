@@ -57,20 +57,8 @@ public class Jeu extends Observable implements Runnable {
         nextC = c;
 
         synchronized (this){
-            this.plateau.getPositions()[nextC.getDep()[0]][nextC.getDep()[1]].getPiece().move(nextC, this);
+            setPositions(c);
             updateObservers();
-        }
-
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                if(this.plateau.getCase(i, j).getPiece() == null){
-                    System.out.print(" x ");
-                }
-                else{
-                    System.out.print(this.plateau.getCase(i, j).getPiece().getName());
-                }
-            }
-            System.out.println();
         }
     }
 
