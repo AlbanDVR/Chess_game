@@ -18,17 +18,6 @@ public class Plateau {
         return positions;
     }
 
-    public Case getCase(Piece piece) {
-        for (Case[] array : positions) {
-            for (Case c : array) {
-                if (c.getPiece().equals(piece)) {
-                    return c;
-                }
-            }
-        }
-        return null;
-    }
-
     public int[] getCoord(Case target){
         for (int i = 0; i < positions.length; i++) {
             for (int j = 0; j < positions[i].length; j++) {
