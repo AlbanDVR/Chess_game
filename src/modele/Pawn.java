@@ -23,6 +23,7 @@ public class Pawn extends Piece {
 
     @Override
     public void move(Coup coup, Jeu jeu) {
+
         // Si la place est libre
 //        if(jeu.isAvailable(coup.getArr()[0], coup.getArr()[1])) {
 //            // Si le pion peut le faire

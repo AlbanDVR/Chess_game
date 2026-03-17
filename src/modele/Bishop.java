@@ -11,7 +11,7 @@ public class Bishop extends Piece {
 
     @Override
     public void chargerDCA(Case c, Plateau p) {
-        // to do
+        this.setDCA(new Diag(c, p, true, true));
     }
 
     @Override

@@ -11,7 +11,7 @@ public class Queen extends Piece {
 
     @Override
     public void chargerDCA(Case c, Plateau p) {
-        // to do
+        this.setDCA(new HV(new Diag(c, p, true, true), c, p, true, true));
     }
 
     @Override

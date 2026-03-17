@@ -11,7 +11,7 @@ public class Rook extends Piece {
 
     @Override
     public void chargerDCA(Case c, Plateau p) {
-        // to do
+        this.setDCA(new HV(c, p, true, true));
     }
 
     @Override
