@@ -10,6 +10,11 @@ public class Pawn extends Piece {
     }
 
     @Override
+    public void chargerDCA(Case c, Plateau p) {
+        this.setDCA(new HV(c, p, 1));
+    }
+
+    @Override
     public void move(Coup coup, Jeu jeu) {
         // Si la place est libre
 //        if(jeu.isAvailable(coup.getArr()[0], coup.getArr()[1])) {

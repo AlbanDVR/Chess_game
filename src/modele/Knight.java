@@ -10,6 +10,11 @@ public class Knight extends Piece {
     }
 
     @Override
+    public void chargerDCA(Case c, Plateau p) {
+        // to do
+    }
+
+    @Override
     public void move(Coup coup, Jeu jeu) {
         // to do
     }

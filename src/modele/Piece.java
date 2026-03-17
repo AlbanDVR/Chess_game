@@ -27,6 +27,8 @@ public abstract class Piece {
         this.dca = dca;
     }
 
+    public abstract void chargerDCA(Case c, Plateau p);
+
     public abstract void move(Coup coup, Jeu jeu);
 
 }

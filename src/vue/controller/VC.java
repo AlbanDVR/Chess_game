@@ -48,17 +48,11 @@ public class VC extends JFrame implements Observer {
 
                             if (piece != null) {
 
-                                if (piece instanceof Rook || piece instanceof Queen) {
-                                    piece.setDCA(new HV(jeu.getPlateau().getCase(r, c), jeu.getPlateau()));
-                                }
-
-                                if (piece instanceof Pawn) {
-                                    piece.setDCA(new HV(jeu.getPlateau().getCase(r, c), jeu.getPlateau(), 1));
-                                }
+                                piece.chargerDCA(jeu.getPlateau().getCase(r, c), jeu.getPlateau());
 
                                 if (piece.getDCA() != null) {
                                     casesAccessibles = piece.getDCA().getCasesAccessibles(jeu);
-                                }                            }
+                                }                          }
 
                             // Notifier les observateurs pour redessiner
                             jeu.updateObservers();
