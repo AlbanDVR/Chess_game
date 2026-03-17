@@ -6,12 +6,14 @@ public class Diag extends DCA{
     private int portee;
     private boolean peutAvancer;
     private boolean peutCapturer;
+    private boolean fullRange;
 
     public Diag(Case currentCase, Plateau plateau) {
         super(currentCase, plateau);
         this.portee = 8; // tout
         this.peutAvancer = true;
         this.peutCapturer = true;
+        this.fullRange = true;
     }
 
     public Diag(Case currentCase, Plateau plateau, int portee) {
@@ -19,13 +21,16 @@ public class Diag extends DCA{
         this.portee = portee;
         this.peutAvancer = true;
         this.peutCapturer = true;
+        this.fullRange = true;
     }
 
-    public Diag(Case currentCase, Plateau plateau, int portee, boolean peutAvancer, boolean peutCapturer) {
+    // pion
+    public Diag(Case currentCase, Plateau plateau, int portee, boolean peutAvancer, boolean peutCapturer, boolean fullRange) {
         super(currentCase, plateau);
         this.portee = portee;
         this.peutAvancer = peutAvancer;
         this.peutCapturer = peutCapturer;
+        this.fullRange = fullRange;
     }
 
     @Override
@@ -34,18 +39,30 @@ public class Diag extends DCA{
 
         Plateau plateau = getPlateau();
 
-        // Direction Haut Gauche
-        caseAccessible.addAll(explorerDirection(currentCase, Direction.HG, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
-
-        // Direction Haut Droite
-        caseAccessible.addAll(explorerDirection(currentCase, Direction.HD, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
-
-        // Direction Bas Gauche
-        caseAccessible.addAll(explorerDirection(currentCase, Direction.BG, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
-
-        // Direction Bas Droite
-        caseAccessible.addAll(explorerDirection(currentCase, Direction.BD, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
-
+        if(fullRange) {
+            // Direction Haut Gauche
+            caseAccessible.addAll(explorerDirection(currentCase, Direction.HG, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
+            // Direction Haut Droite
+            caseAccessible.addAll(explorerDirection(currentCase, Direction.HD, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
+            // Direction Bas Gauche
+            caseAccessible.addAll(explorerDirection(currentCase, Direction.BG, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
+            // Direction Bas Droite
+            caseAccessible.addAll(explorerDirection(currentCase, Direction.BD, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
+        }
+        else {
+            if(currentPlayer == 0){
+                Direction dir1 = Direction.HG;
+                Direction dir2 = Direction.HD;
+                caseAccessible.addAll(explorerDirection(currentCase, dir1, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
+                caseAccessible.addAll(explorerDirection(currentCase, dir2, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
+            }
+            else {
+                Direction dir1 = Direction.BG;
+                Direction dir2 = Direction.BD;
+                caseAccessible.addAll(explorerDirection(currentCase, dir1, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
+                caseAccessible.addAll(explorerDirection(currentCase, dir2, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
+            }
+        }
         return caseAccessible;
     }
 

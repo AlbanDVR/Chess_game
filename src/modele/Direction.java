@@ -24,8 +24,8 @@ public enum Direction {
     private int dy;
 
     Direction (int _dx, int _dy){
-        dx = _dx;
-        dy = _dy;
+        dx = _dy;
+        dy = _dx;
     }
 
     public int getDx(){

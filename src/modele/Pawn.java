@@ -18,6 +18,6 @@ public class Pawn extends Piece {
             portee = 2;
         }
 
-        this.setDCA(new HV(new Diag(c, p, 1, false, true), c, p, portee, true, false));
+        this.setDCA(new HV(new Diag(c, p, 1, false, true, false), c, p, portee, true, false, false));
     }
 }

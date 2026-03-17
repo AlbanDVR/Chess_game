@@ -6,19 +6,14 @@ public class HV extends DCA{
     private int portee;
     private boolean peutAvancer;
     private boolean peutCapturer;
+    private boolean fullRange;
 
     public HV(Case currentCase, Plateau plateau) {
         super(currentCase, plateau);
         this.portee = 8; // tout
         this.peutAvancer = true;
         this.peutCapturer = true;
-    }
-
-    public HV(Case currentCase, Plateau plateau, boolean peutAvancer, boolean peutCapturer) {
-        super(currentCase, plateau);
-        this.portee = 8; // tout
-        this.peutAvancer = peutAvancer;
-        this.peutCapturer = peutCapturer;
+        this.fullRange = true;
     }
 
     public HV(DCA base, Case currentCase, Plateau plateau) {
@@ -26,6 +21,7 @@ public class HV extends DCA{
         this.portee = 8; // tout
         this.peutAvancer = true;
         this.peutCapturer = true;
+        this.fullRange = true;
     }
 
     public HV(DCA base, Case currentCase, Plateau plateau, int portee) {
@@ -33,13 +29,16 @@ public class HV extends DCA{
         this.portee = portee;
         this.peutAvancer = true;
         this.peutCapturer = true;
+        this.fullRange = true;
     }
 
-    public HV(DCA base, Case currentCase, Plateau plateau, int portee, boolean peutAvancer, boolean peutCapturer) {
+    // Pion
+    public HV(DCA base, Case currentCase, Plateau plateau, int portee, boolean peutAvancer, boolean peutCapturer, boolean fullRange) {
         super(base, currentCase, plateau);
         this.portee = portee;
         this.peutAvancer = peutAvancer;
         this.peutCapturer = peutCapturer;
+        this.fullRange = fullRange;
     }
 
     @Override
@@ -48,17 +47,20 @@ public class HV extends DCA{
 
         Plateau plateau = getPlateau();
 
-        // Direction DROITE
-        caseAccessible.addAll(explorerDirection(currentCase, Direction.DROITE, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
-
-        // Direction GAUCHE
-        caseAccessible.addAll(explorerDirection(currentCase, Direction.GAUCHE, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
-
-        // Direction HAUT
-        caseAccessible.addAll(explorerDirection(currentCase, Direction.HAUT, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
-
-        // Direction BAS
-        caseAccessible.addAll(explorerDirection(currentCase, Direction.BAS, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
+        if (fullRange) {
+            // Direction Droite
+            caseAccessible.addAll(explorerDirection(currentCase, Direction.DROITE, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
+            // Direction Gauche
+            caseAccessible.addAll(explorerDirection(currentCase, Direction.GAUCHE, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
+            // Direction Haut
+            caseAccessible.addAll(explorerDirection(currentCase, Direction.HAUT, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
+            // Direction Bas
+            caseAccessible.addAll(explorerDirection(currentCase, Direction.BAS, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
+        }
+        else { // Pov le pion
+            Direction directionAvant = (currentCase.getPiece().getColor() == 0) ? Direction.HAUT : Direction.BAS; // en fonction du joueur
+            caseAccessible.addAll(explorerDirection(currentCase, directionAvant, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
+        }
 
         return caseAccessible;
     }
