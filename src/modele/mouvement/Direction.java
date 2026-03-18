@@ -1,4 +1,4 @@
-package modele;
+package modele.mouvement;
 
 public enum Direction {
     HAUT(0, -1),

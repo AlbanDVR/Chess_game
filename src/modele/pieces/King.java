@@ -1,4 +1,9 @@
-package modele;
+package modele.pieces;
+
+import modele.Case;
+import modele.mouvement.Diag;
+import modele.mouvement.HV;
+import modele.Plateau;
 
 /**
  * Classe représentant un roi

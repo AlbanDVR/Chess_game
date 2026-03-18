@@ -1,5 +1,13 @@
 package modele;
 
+import modele.mouvement.Direction;
+import modele.pieces.Bishop;
+import modele.pieces.King;
+import modele.pieces.Knight;
+import modele.pieces.Pawn;
+import modele.pieces.Queen;
+import modele.pieces.Rook;
+
 public class Plateau {
     private final Case[][] positions;
 

@@ -1,4 +1,7 @@
-package modele;
+package modele.mouvement;
+
+import modele.Case;
+import modele.Plateau;
 
 import java.util.ArrayList;
 

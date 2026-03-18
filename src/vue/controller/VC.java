@@ -3,7 +3,7 @@ package vue.controller;
 import modele.Case;
 import modele.Coup;
 import modele.Jeu;
-import modele.Piece;
+import modele.pieces.Piece;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;

@@ -1,4 +1,8 @@
-package modele;
+package modele.pieces;
+
+import modele.Case;
+import modele.mouvement.DCA;
+import modele.Plateau;
 
 public abstract class Piece {
     private final String name;

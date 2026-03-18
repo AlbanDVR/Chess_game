@@ -1,14 +1,17 @@
-package modele;
+package modele.mouvement;
+
+import modele.Case;
+import modele.Plateau;
 
 import java.util.ArrayList;
 
-public class HV extends DCA{
+public class Diag extends DCA{
     private int portee;
     private boolean peutAvancer;
     private boolean peutCapturer;
     private boolean fullRange;
 
-    public HV(Case currentCase, Plateau plateau) {
+    public Diag(Case currentCase, Plateau plateau) {
         super(currentCase, plateau);
         this.portee = 8; // tout
         this.peutAvancer = true;
@@ -16,25 +19,17 @@ public class HV extends DCA{
         this.fullRange = true;
     }
 
-    public HV(DCA base, Case currentCase, Plateau plateau) {
-        super(base, currentCase, plateau);
-        this.portee = 8; // tout
-        this.peutAvancer = true;
-        this.peutCapturer = true;
-        this.fullRange = true;
-    }
-
-    public HV(DCA base, Case currentCase, Plateau plateau, int portee) {
-        super(base, currentCase, plateau);
+    public Diag(Case currentCase, Plateau plateau, int portee) {
+        super(currentCase, plateau);
         this.portee = portee;
         this.peutAvancer = true;
         this.peutCapturer = true;
         this.fullRange = true;
     }
 
-    // Pion
-    public HV(DCA base, Case currentCase, Plateau plateau, int portee, boolean peutAvancer, boolean peutCapturer, boolean fullRange) {
-        super(base, currentCase, plateau);
+    // pion
+    public Diag(Case currentCase, Plateau plateau, int portee, boolean peutAvancer, boolean peutCapturer, boolean fullRange) {
+        super(currentCase, plateau);
         this.portee = portee;
         this.peutAvancer = peutAvancer;
         this.peutCapturer = peutCapturer;
@@ -47,21 +42,30 @@ public class HV extends DCA{
 
         Plateau plateau = getPlateau();
 
-        if (fullRange) {
-            // Direction Droite
-            caseAccessible.addAll(explorerDirection(currentCase, Direction.DROITE, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
-            // Direction Gauche
-            caseAccessible.addAll(explorerDirection(currentCase, Direction.GAUCHE, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
-            // Direction Haut
-            caseAccessible.addAll(explorerDirection(currentCase, Direction.HAUT, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
-            // Direction Bas
-            caseAccessible.addAll(explorerDirection(currentCase, Direction.BAS, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
+        if(fullRange) {
+            // Direction Haut Gauche
+            caseAccessible.addAll(explorerDirection(currentCase, Direction.HG, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
+            // Direction Haut Droite
+            caseAccessible.addAll(explorerDirection(currentCase, Direction.HD, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
+            // Direction Bas Gauche
+            caseAccessible.addAll(explorerDirection(currentCase, Direction.BG, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
+            // Direction Bas Droite
+            caseAccessible.addAll(explorerDirection(currentCase, Direction.BD, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
         }
-        else { // Pov le pion
-            Direction directionAvant = (currentCase.getPiece().getColor() == 0) ? Direction.HAUT : Direction.BAS; // en fonction du joueur
-            caseAccessible.addAll(explorerDirection(currentCase, directionAvant, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
+        else {
+            if(currentPlayer == 0){
+                Direction dir1 = Direction.HG;
+                Direction dir2 = Direction.HD;
+                caseAccessible.addAll(explorerDirection(currentCase, dir1, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
+                caseAccessible.addAll(explorerDirection(currentCase, dir2, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
+            }
+            else {
+                Direction dir1 = Direction.BG;
+                Direction dir2 = Direction.BD;
+                caseAccessible.addAll(explorerDirection(currentCase, dir1, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
+                caseAccessible.addAll(explorerDirection(currentCase, dir2, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
+            }
         }
-
         return caseAccessible;
     }
 

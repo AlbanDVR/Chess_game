@@ -1,5 +1,7 @@
 package modele;
 
+import modele.pieces.Piece;
+
 public class Case {
     private Piece piece;
 

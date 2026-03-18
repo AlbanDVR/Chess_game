@@ -1,4 +1,8 @@
-package modele;
+package modele.pieces;
+
+import modele.Case;
+import modele.Plateau;
+import modele.mouvement.SautCheval;
 
 /**
  * Classe représentant un chevalier
