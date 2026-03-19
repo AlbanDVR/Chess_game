@@ -2,8 +2,8 @@ package modele;
 
 public class Coup {
 
-    public int[] arr = new int[2];
-    public int[] dep = new int[2];
+    private int[] arr = new int[2];
+    private int[] dep = new int[2];
 
     public boolean ready = false;
 

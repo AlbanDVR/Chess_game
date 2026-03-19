@@ -1,10 +1,15 @@
 package modele.mouvement;
 
 public enum Direction {
+    // Vertical
     HAUT(0, -1),
     BAS(0, 1),
+
+    // Horizontal
     GAUCHE(-1, 0),
     DROITE(1, 0),
+
+    // Diagonale
     HD(1, -1),
     HG(-1, -1),
     BD(1, 1),
@@ -28,11 +33,10 @@ public enum Direction {
         dy = _dx;
     }
 
-    public int getDx() {
+    public int getDx(){
         return dx;
     }
-
-    public int getDy() {
+    public int getDy(){
         return dy;
     }
 

@@ -6,42 +6,13 @@ import modele.Plateau;
 import java.util.ArrayList;
 
 public class HV extends DCA{
-    private final int portee;
-    private final boolean peutAvancer;
-    private final boolean peutCapturer;
-    private final boolean fullRange;
 
-    public HV(Case currentCase, Plateau plateau) {
-        super(currentCase, plateau);
-        this.portee = 8; // tout
-        this.peutAvancer = true;
-        this.peutCapturer = true;
-        this.fullRange = true;
+    public HV(Plateau plateau) {
+        super(plateau);
     }
 
-    public HV(DCA base, Case currentCase, Plateau plateau) {
-        super(base, currentCase, plateau);
-        this.portee = 8; // tout
-        this.peutAvancer = true;
-        this.peutCapturer = true;
-        this.fullRange = true;
-    }
-
-    public HV(DCA base, Case currentCase, Plateau plateau, int portee) {
-        super(base, currentCase, plateau);
-        this.portee = portee;
-        this.peutAvancer = true;
-        this.peutCapturer = true;
-        this.fullRange = true;
-    }
-
-    // Pion
-    public HV(DCA base, Case currentCase, Plateau plateau, int portee, boolean peutAvancer, boolean peutCapturer, boolean fullRange) {
-        super(base, currentCase, plateau);
-        this.portee = portee;
-        this.peutAvancer = peutAvancer;
-        this.peutCapturer = peutCapturer;
-        this.fullRange = fullRange;
+    public HV(DCA base, Plateau plateau) {
+        super(base, plateau);
     }
 
     @Override
@@ -50,30 +21,23 @@ public class HV extends DCA{
 
         Plateau plateau = getPlateau();
 
-        if (fullRange) {
-            // Direction Droite
-            caseAccessible.addAll(explorerDirection(currentCase, Direction.DROITE, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
-            // Direction Gauche
-            caseAccessible.addAll(explorerDirection(currentCase, Direction.GAUCHE, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
-            // Direction Haut
-            caseAccessible.addAll(explorerDirection(currentCase, Direction.HAUT, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
-            // Direction Bas
-            caseAccessible.addAll(explorerDirection(currentCase, Direction.BAS, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
-        }
-        else { // Pov le pion
-            Direction directionAvant = (currentCase.getPiece().getColor() == 0) ? Direction.HAUT : Direction.BAS; // en fonction du joueur
-            caseAccessible.addAll(explorerDirection(currentCase, directionAvant, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
-        }
+        // Direction Droite
+        caseAccessible.addAll(explorerDirection(currentCase, Direction.DROITE, currentPlayer, plateau));
+        // Direction Gauche
+        caseAccessible.addAll(explorerDirection(currentCase, Direction.GAUCHE, currentPlayer, plateau));
+        // Direction Haut
+        caseAccessible.addAll(explorerDirection(currentCase, Direction.HAUT, currentPlayer, plateau));
+        // Direction Bas
+        caseAccessible.addAll(explorerDirection(currentCase, Direction.BAS, currentPlayer, plateau));
 
         return caseAccessible;
     }
 
-    private ArrayList<Case> explorerDirection(Case startCase, Direction direction, int currentPlayer, Plateau plateau, int porteeMax, boolean peutAvancer, boolean peutCapturer) {
+    private ArrayList<Case> explorerDirection(Case startCase, Direction direction, int currentPlayer, Plateau plateau) {
         ArrayList<Case> cases = new ArrayList<>();
         Case currentCase = startCase;
 
-        int pas = 0;
-        while (pas < porteeMax) {
+        while (true) {
             Case nextCase = plateau.getCaseAdj(currentCase, direction);
 
             // Si pas de case adjacente, on arrête
@@ -83,14 +47,12 @@ public class HV extends DCA{
 
             // Si la case est vide, on l'ajoute et on continue
             if (nextCase.getPiece() == null) {
-                if(peutAvancer) {
-                    cases.add(nextCase);
-                }
+                cases.add(nextCase);
                 currentCase = nextCase;
             }
 
             // Si c'est une pièce de l'adversaire, on l'ajoute et on arrête
-            else if (nextCase.getPiece().getColor() != currentPlayer && peutCapturer) {
+            else if (nextCase.getPiece().getColor() != currentPlayer) {
                 cases.add(nextCase);
                 break;
             }
@@ -100,7 +62,6 @@ public class HV extends DCA{
                 break;
             }
 
-            pas++;
         }
 
         return cases;

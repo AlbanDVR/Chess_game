@@ -7,8 +7,8 @@ import java.util.ArrayList;
 
 public class SautCheval extends DCA {
 
-    public SautCheval(Case currentCase, Plateau plateau) {
-        super(currentCase, plateau);
+    public SautCheval(Plateau plateau) {
+        super(plateau);
     }
 
     @Override

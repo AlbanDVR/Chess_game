@@ -1,21 +1,23 @@
 package modele.pieces;
 
 import modele.Case;
-import modele.mouvement.Diag;
-import modele.mouvement.HV;
+import modele.Jeu;
 import modele.Plateau;
+import modele.mouvement.MouvKing;
+
+import java.util.ArrayList;
 
 /**
  * Classe représentant un roi
  */
 public class King extends Piece {
 
-    public King(int color) {
-        super(color);
+    public King(int color, Plateau p) {
+        super(color, new MouvKing(p));
     }
 
     @Override
-    public void chargerDCA(Case c, Plateau p) {
-        this.setDCA(new HV(new Diag(c, p, 1), c, p, 1));
+    public ArrayList<Case> chargerCasesAccessible(Jeu jeu, Plateau p) {
+        return dca.getCasesAccessibles(jeu, p.getCase(this));
     }
 }

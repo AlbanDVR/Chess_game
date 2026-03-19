@@ -1,21 +1,24 @@
 package modele.pieces;
 
 import modele.Case;
+import modele.Jeu;
+import modele.Plateau;
 import modele.mouvement.Diag;
 import modele.mouvement.HV;
-import modele.Plateau;
+
+import java.util.ArrayList;
 
 /**
  * Classe représentant une reine
  */
 public class Queen extends Piece {
 
-    public Queen(int color) {
-        super(color);
+    public Queen(int color, Plateau p) {
+        super(color, new HV(new Diag(p), p));
     }
 
     @Override
-    public void chargerDCA(Case c, Plateau p) {
-        this.setDCA(new HV(new Diag(c, p), c, p));
+    public ArrayList<Case> chargerCasesAccessible(Jeu jeu, Plateau p) {
+        return dca.getCasesAccessibles(jeu, p.getCase(this));
     }
 }

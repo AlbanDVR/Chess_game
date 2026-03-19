@@ -1,18 +1,21 @@
 package modele.pieces;
 
 import modele.Case;
+import modele.Jeu;
 import modele.mouvement.DCA;
 import modele.Plateau;
+
+import java.util.ArrayList;
 
 public abstract class Piece {
     private final String name;
     private final int color; // 0 : blanc | 1 : noir
-    private DCA dca;
+    protected DCA dca;
 
-    public Piece(int color) {
+    public Piece(int color, DCA dca) {
         this.color = color;
         this.name = this.getClass().getSimpleName();
-        this.dca = null;
+        this.dca = dca;
     }
 
     public String getName() {
@@ -23,13 +26,5 @@ public abstract class Piece {
         return color;
     }
 
-    public DCA getDCA(){
-        return dca;
-    }
-
-    public void setDCA(DCA dca) {
-        this.dca = dca;
-    }
-
-    public abstract void chargerDCA(Case c, Plateau p);
+    public abstract ArrayList<Case> chargerCasesAccessible(Jeu jeu, Plateau p);
 }

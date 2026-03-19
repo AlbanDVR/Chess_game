@@ -8,30 +8,27 @@ import java.util.ArrayList;
 
 public abstract class DCA {
 
-    private final DCA base;
-    private final Case currentCase;
-    private final Plateau plateau;
+    private DCA base;
+    private Plateau plateau;
 
 
-    public DCA(Case currentCase, Plateau plateau) {
+    public DCA(Plateau plateau) {
         this.base = null;
-        this.currentCase = currentCase;
         this.plateau = plateau;
     }
 
-    public DCA(DCA base, Case currentCase, Plateau plateau) {
+    public DCA(DCA base, Plateau plateau) {
         this.base = base;
-        this.currentCase = currentCase;
         this.plateau = plateau;
     }
 
 
-    public ArrayList<Case> getCasesAccessibles(Jeu jeu){
+    public ArrayList<Case> getCasesAccessibles(Jeu jeu, Case currentCase){
         if(base == null){
             return getMesCasesAccessibles(jeu.getCurrentPlayer(), currentCase);
         }
         else{
-            ArrayList<Case> baseCase = base.getCasesAccessibles(jeu);
+            ArrayList<Case> baseCase = base.getCasesAccessibles(jeu,  currentCase);
             baseCase.addAll(getMesCasesAccessibles(jeu.getCurrentPlayer(), currentCase));
             return baseCase;
         }

@@ -5,6 +5,7 @@ import modele.pieces.Bishop;
 import modele.pieces.King;
 import modele.pieces.Knight;
 import modele.pieces.Pawn;
+import modele.pieces.Piece;
 import modele.pieces.Queen;
 import modele.pieces.Rook;
 
@@ -12,14 +13,14 @@ public class Plateau {
     private final Case[][] positions;
 
     Plateau() {
-        positions = new Case[][]{{new Case(new Rook(1)), new Case(new Knight(1)), new Case(new Bishop(1)), new Case(new King(1)), new Case(new Queen(1)), new Case(new Bishop(1)), new Case(new Knight(1)), new Case(new Rook(1))},
-                {new Case(new Pawn(1)), new Case(new Pawn(1)), new Case(new Pawn(1)), new Case(new Pawn(1)), new Case(new Pawn(1)), new Case(new Pawn(1)), new Case(new Pawn(1)), new Case(new Pawn(1))},
+        positions = new Case[][]{{new Case(new Rook(1, this)), new Case(new Knight(1, this)), new Case(new Bishop(1, this)), new Case(new King(1, this)), new Case(new Queen(1, this)), new Case(new Bishop(1, this)), new Case(new Knight(1, this)), new Case(new Rook(1, this))},
+                {new Case(new Pawn(1, this)), new Case(new Pawn(1, this)), new Case(new Pawn(1, this)), new Case(new Pawn(1, this)), new Case(new Pawn(1, this)), new Case(new Pawn(1, this)), new Case(new Pawn(1, this)), new Case(new Pawn(1, this))},
                 {new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null)},
                 {new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null)},
                 {new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null)},
                 {new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null)},
-                {new Case(null), new Case(new Pawn(0)), new Case(new Pawn(0)), new Case(new Pawn(0)), new Case(new Pawn(0)), new Case(new Pawn(0)), new Case(new Pawn(0)), new Case(new Pawn(0))},
-                {new Case(new Rook(0)), new Case(new Knight(0)), new Case(new Bishop(0)), new Case(new King(0)), new Case(new Queen(0)), new Case(new Bishop(0)), new Case(new Knight(0)), new Case(new Rook(0))}};
+                {new Case(new Pawn(0, this)), new Case(new Pawn(0, this)), new Case(new Pawn(0, this)), new Case(new Pawn(0, this)), new Case(new Pawn(0, this)), new Case(new Pawn(0, this)), new Case(new Pawn(0, this)), new Case(new Pawn(0, this))},
+                {new Case(new Rook(0, this)), new Case(new Knight(0, this)), new Case(new Bishop(0, this)), new Case(new King(0, this)), new Case(new Queen(0, this)), new Case(new Bishop(0, this)), new Case(new Knight(0, this)), new Case(new Rook(0, this))}};
     }
 
     public Case[][] getPositions() {
@@ -39,6 +40,17 @@ public class Plateau {
 
     public Case getCase(int x, int y) {
         return this.positions[x][y];
+    }
+
+    public Case getCase(Piece piece) {
+        for (Case[] row : positions) {
+            for (Case cases : row) {
+                if(cases.getPiece() != null && cases.getPiece().equals(piece)) {
+                    return cases;
+                }
+            }
+        }
+        return null;
     }
 
     public Case getCaseAdj(Case c, Direction dir) {

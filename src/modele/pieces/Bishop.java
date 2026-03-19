@@ -1,20 +1,23 @@
 package modele.pieces;
 
 import modele.Case;
-import modele.mouvement.Diag;
+import modele.Jeu;
 import modele.Plateau;
+import modele.mouvement.Diag;
+
+import java.util.ArrayList;
 
 /**
  * Classe représentant un fou
  */
 public class Bishop extends Piece {
 
-    public Bishop(int color) {
-        super(color);
+    public Bishop(int color, Plateau p) {
+        super(color, new Diag(p));
     }
 
     @Override
-    public void chargerDCA(Case c, Plateau p) {
-        this.setDCA(new Diag(c, p));
+    public ArrayList<Case> chargerCasesAccessible(Jeu jeu, Plateau p) {
+        return dca.getCasesAccessibles(jeu, p.getCase(this));
     }
 }

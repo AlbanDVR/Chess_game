@@ -11,9 +11,9 @@ public class Jeu extends Observable implements Runnable {
     private final Joueur[] liste = new Joueur[2];
     private int currentPlayer = 0;
     private Plateau plateau;
-    public Coup nextC;
+    protected Coup nextC;
     private final Coup pendingCoup = new Coup();
-    private final ArrayList<Case> casesAccessibles = new ArrayList<>();
+    private ArrayList<Case> casesAccessibles = new ArrayList<>();
     private final ArrayList<String> moveNotations = new ArrayList<>();
     private final ArrayList<Piece> capturedPieces = new ArrayList<>();
     private Coup lastPlayedMove;
@@ -159,10 +159,7 @@ public class Jeu extends Observable implements Runnable {
         }
 
         pendingCoup.setDep(row, col);
-        piece.chargerDCA(departure, plateau);
-        if (piece.getDCA() != null) {
-            casesAccessibles.addAll(piece.getDCA().getCasesAccessibles(this));
-        }
+        this.casesAccessibles = piece.chargerCasesAccessible(this, this.getPlateau());
     }
 
     private void tryPlayMove(int row, int col) {

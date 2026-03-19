@@ -6,34 +6,9 @@ import modele.Plateau;
 import java.util.ArrayList;
 
 public class Diag extends DCA{
-    private final int portee;
-    private final boolean peutAvancer;
-    private final boolean peutCapturer;
-    private final boolean fullRange;
 
-    public Diag(Case currentCase, Plateau plateau) {
-        super(currentCase, plateau);
-        this.portee = 8; // tout
-        this.peutAvancer = true;
-        this.peutCapturer = true;
-        this.fullRange = true;
-    }
-
-    public Diag(Case currentCase, Plateau plateau, int portee) {
-        super(currentCase, plateau);
-        this.portee = portee;
-        this.peutAvancer = true;
-        this.peutCapturer = true;
-        this.fullRange = true;
-    }
-
-    // pion
-    public Diag(Case currentCase, Plateau plateau, int portee, boolean peutAvancer, boolean peutCapturer, boolean fullRange) {
-        super(currentCase, plateau);
-        this.portee = portee;
-        this.peutAvancer = peutAvancer;
-        this.peutCapturer = peutCapturer;
-        this.fullRange = fullRange;
+    public Diag(Plateau plateau) {
+        super(plateau);
     }
 
     @Override
@@ -42,39 +17,23 @@ public class Diag extends DCA{
 
         Plateau plateau = getPlateau();
 
-        if(fullRange) {
-            // Direction Haut Gauche
-            caseAccessible.addAll(explorerDirection(currentCase, Direction.HG, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
-            // Direction Haut Droite
-            caseAccessible.addAll(explorerDirection(currentCase, Direction.HD, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
-            // Direction Bas Gauche
-            caseAccessible.addAll(explorerDirection(currentCase, Direction.BG, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
-            // Direction Bas Droite
-            caseAccessible.addAll(explorerDirection(currentCase, Direction.BD, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
-        }
-        else {
-            if(currentPlayer == 0){
-                Direction dir1 = Direction.HG;
-                Direction dir2 = Direction.HD;
-                caseAccessible.addAll(explorerDirection(currentCase, dir1, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
-                caseAccessible.addAll(explorerDirection(currentCase, dir2, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
-            }
-            else {
-                Direction dir1 = Direction.BG;
-                Direction dir2 = Direction.BD;
-                caseAccessible.addAll(explorerDirection(currentCase, dir1, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
-                caseAccessible.addAll(explorerDirection(currentCase, dir2, currentPlayer, plateau, portee, peutAvancer, peutCapturer));
-            }
-        }
+        // Direction Haut Gauche
+        caseAccessible.addAll(explorerDirection(currentCase, Direction.HG, currentPlayer, plateau));
+        // Direction Haut Droite
+        caseAccessible.addAll(explorerDirection(currentCase, Direction.HD, currentPlayer, plateau));
+        // Direction Bas Gauche
+        caseAccessible.addAll(explorerDirection(currentCase, Direction.BG, currentPlayer, plateau));
+        // Direction Bas Droite
+        caseAccessible.addAll(explorerDirection(currentCase, Direction.BD, currentPlayer, plateau));
+
         return caseAccessible;
     }
 
-    private ArrayList<Case> explorerDirection(Case startCase, Direction direction, int currentPlayer, Plateau plateau, int porteeMax, boolean peutAvancer, boolean peutCapturer) {
+    private ArrayList<Case> explorerDirection(Case startCase, Direction direction, int currentPlayer, Plateau plateau) {
         ArrayList<Case> cases = new ArrayList<>();
         Case currentCase = startCase;
 
-        int pas = 0;
-        while (pas < porteeMax) {
+        while (true) {
             Case nextCase = plateau.getCaseAdj(currentCase, direction);
 
             // Si pas de case adjacente, on arrête
@@ -84,14 +43,12 @@ public class Diag extends DCA{
 
             // Si la case est vide, on l'ajoute et on continue
             if (nextCase.getPiece() == null) {
-                if(peutAvancer) {
-                    cases.add(nextCase);
-                }
+                cases.add(nextCase);
                 currentCase = nextCase;
             }
 
             // Si c'est une pièce de l'adversaire, on l'ajoute et on arrête
-            else if (nextCase.getPiece().getColor() != currentPlayer && peutCapturer) {
+            else if (nextCase.getPiece().getColor() != currentPlayer) {
                 cases.add(nextCase);
                 break;
             }
@@ -101,7 +58,6 @@ public class Diag extends DCA{
                 break;
             }
 
-            pas++;
         }
 
         return cases;
