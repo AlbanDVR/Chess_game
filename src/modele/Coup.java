@@ -9,6 +9,14 @@ public class Coup {
 
     public Coup(){}
 
+    public Coup(Coup other) {
+        this.arr[0] = other.arr[0];
+        this.arr[1] = other.arr[1];
+        this.dep[0] = other.dep[0];
+        this.dep[1] = other.dep[1];
+        this.ready = other.ready;
+    }
+
     public void setArr(int i, int j){
         this.arr[0] = i;
         this.arr[1] = j;

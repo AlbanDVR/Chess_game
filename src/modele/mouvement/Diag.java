@@ -6,10 +6,10 @@ import modele.Plateau;
 import java.util.ArrayList;
 
 public class Diag extends DCA{
-    private int portee;
-    private boolean peutAvancer;
-    private boolean peutCapturer;
-    private boolean fullRange;
+    private final int portee;
+    private final boolean peutAvancer;
+    private final boolean peutCapturer;
+    private final boolean fullRange;
 
     public Diag(Case currentCase, Plateau plateau) {
         super(currentCase, plateau);

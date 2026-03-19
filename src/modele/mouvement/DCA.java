@@ -8,9 +8,9 @@ import java.util.ArrayList;
 
 public abstract class DCA {
 
-    private DCA base;
-    private Case currentCase;
-    private Plateau plateau;
+    private final DCA base;
+    private final Case currentCase;
+    private final Plateau plateau;
 
 
     public DCA(Case currentCase, Plateau plateau) {

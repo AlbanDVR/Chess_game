@@ -20,18 +20,19 @@ public enum Direction {
     C_DROITE_HAUT(2, -1),
     C_DROITE_BAS(2, 1);
 
-    private int dx;
-    private int dy;
+    private final int dx;
+    private final int dy;
 
-    Direction (int _dx, int _dy){
+    Direction(int _dx, int _dy) {
         dx = _dy;
         dy = _dx;
     }
 
-    public int getDx(){
+    public int getDx() {
         return dx;
     }
-    public int getDy(){
+
+    public int getDy() {
         return dy;
     }
 

@@ -2,7 +2,7 @@ package modele;
 
 public class Joueur {
 
-    private Jeu jeu;
+    private final Jeu jeu;
 
     public Joueur(Jeu jeu) {
         this.jeu = jeu;
