@@ -1,12 +1,16 @@
 package modele;
 
 import modele.pieces.Piece;
+import reseau.MultiplayerClient;
+import reseau.MultiplayerEventListener;
+import reseau.WebSocketMultiplayerClient;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 
 public class Jeu extends Observable implements Runnable {
+    private static final String WEBSOCKET_SERVER_URL = "wss://chess.milobrt.fr/ws";
 
     private final Joueur[] liste = new Joueur[2];
     private int currentPlayer = 0;
@@ -18,6 +22,13 @@ public class Jeu extends Observable implements Runnable {
     private final ArrayList<Piece> capturedPieces = new ArrayList<>();
     private Coup lastPlayedMove;
     private long gameStartTime;
+    private String playerName = "Joueur";
+    private String opponentName = "-";
+    private String multiplayerStatus = "Hors ligne";
+    private String currentGameId = "-";
+    private MultiplayerClient multiplayerClient;
+    private boolean applyingRemoteMove;
+    private int localPlayerColor = 0;
 
     public Jeu(){
         plateau = new Plateau();
@@ -40,12 +51,21 @@ public class Jeu extends Observable implements Runnable {
         nextC = c;
 
         synchronized (this){
-            moveNotations.add(buildMoveNotation(c));
-            setPositions(c);
-            lastPlayedMove = new Coup(c);
-            switchJoueur();
-            updateObservers();
+            commitMove(c, true);
         }
+    }
+
+    private void commitMove(Coup c, boolean broadcastMove) {
+        moveNotations.add(buildMoveNotation(c));
+        setPositions(c);
+        lastPlayedMove = new Coup(c);
+
+        if (broadcastMove && isMultiplayerConnected() && !applyingRemoteMove) {
+            multiplayerClient.sendMove(c.getDep()[0], c.getDep()[1], c.getArr()[0], c.getArr()[1]);
+        }
+
+        switchJoueur();
+        updateObservers();
     }
 
     public int getMoveCount() {
@@ -61,6 +81,137 @@ public class Jeu extends Observable implements Runnable {
 
     public List<String> getMoveNotations() {
         return new ArrayList<>(moveNotations);
+    }
+
+    public String getPlayerName() {
+        return playerName;
+    }
+
+    public String getOpponentName() {
+        return opponentName;
+    }
+
+    public String getMultiplayerStatus() {
+        return multiplayerStatus;
+    }
+
+    public String getCurrentGameId() {
+        return currentGameId;
+    }
+
+    public boolean isMultiplayerConnected() {
+        return multiplayerClient != null && multiplayerClient.isConnected();
+    }
+
+    public void setPlayerName(String playerName) {
+        if (playerName == null || playerName.trim().isEmpty()) {
+            return;
+        }
+        this.playerName = playerName.trim();
+        if (isMultiplayerConnected()) {
+            multiplayerClient.sendSetName(this.playerName);
+        }
+        updateObservers();
+    }
+
+    public void createOnlineGame() {
+        connectIfNeeded();
+        if (!isMultiplayerConnected()) {
+            return;
+        }
+        localPlayerColor = 0;
+        multiplayerClient.sendCreateGame();
+        multiplayerStatus = "Creation de partie...";
+        updateObservers();
+    }
+
+    public void joinOnlineGame(String gameId) {
+        connectIfNeeded();
+        if (!isMultiplayerConnected() || gameId == null || gameId.trim().isEmpty()) {
+            return;
+        }
+        localPlayerColor = 1;
+        currentGameId = gameId.trim();
+        multiplayerClient.sendJoinGame(currentGameId);
+        multiplayerStatus = "Connexion a " + currentGameId + "...";
+        updateObservers();
+    }
+
+    public void disconnectMultiplayer() {
+        if (multiplayerClient != null) {
+            multiplayerClient.close();
+            multiplayerClient = null;
+        }
+        localPlayerColor = 0;
+        opponentName = "-";
+        currentGameId = "-";
+        multiplayerStatus = "Hors ligne";
+        updateObservers();
+    }
+
+    private void connectIfNeeded() {
+        if (isMultiplayerConnected()) {
+            return;
+        }
+
+        multiplayerClient = new WebSocketMultiplayerClient();
+        multiplayerStatus = "Connexion...";
+        updateObservers();
+        multiplayerClient.connect(WEBSOCKET_SERVER_URL, new MultiplayerEventListener() {
+            @Override
+            public void onConnected() {
+                multiplayerStatus = "Connecte";
+                multiplayerClient.sendSetName(playerName);
+                updateObservers();
+            }
+
+            @Override
+            public void onGameCreated(String gameId) {
+                currentGameId = gameId;
+                multiplayerStatus = "Partie creee: " + gameId;
+                updateObservers();
+            }
+
+            @Override
+            public void onJoinedGame(String gameId) {
+                currentGameId = gameId;
+                multiplayerStatus = "Partie rejointe: " + gameId;
+                updateObservers();
+            }
+
+            @Override
+            public void onRemoteName(String name) {
+                if (name != null && !name.trim().isEmpty()) {
+                    opponentName = name.trim();
+                    updateObservers();
+                }
+            }
+
+            @Override
+            public void onRemoteMove(int fromRow, int fromCol, int toRow, int toCol) {
+                Coup remoteMove = new Coup();
+                remoteMove.setDep(fromRow, fromCol);
+                remoteMove.setArr(toRow, toCol);
+                applyingRemoteMove = true;
+                try {
+                    commitMove(remoteMove, false);
+                } finally {
+                    applyingRemoteMove = false;
+                }
+            }
+
+            @Override
+            public void onStatus(String status) {
+                multiplayerStatus = status;
+                updateObservers();
+            }
+
+            @Override
+            public void onDisconnected(String reason) {
+                multiplayerStatus = "Deconnecte" + (reason == null || reason.isEmpty() ? "" : (": " + reason));
+                updateObservers();
+            }
+        });
     }
 
     public List<String> getMoveColumn(int color) {
@@ -104,6 +255,7 @@ public class Jeu extends Observable implements Runnable {
         pendingCoup.resetCoup();
         casesAccessibles.clear();
         currentPlayer = 0;
+        localPlayerColor = 0;
         gameStartTime = System.currentTimeMillis();
         updateObservers();
     }
@@ -136,6 +288,12 @@ public class Jeu extends Observable implements Runnable {
     }
 
     public void handleClick(int row, int col) {
+        if (!canLocalPlayerInteract()) {
+            multiplayerStatus = "En attente du tour adverse";
+            updateObservers();
+            return;
+        }
+
         if (!pendingCoup.ready) {
             selectDeparture(row, col);
             updateObservers();
@@ -179,6 +337,10 @@ public class Jeu extends Observable implements Runnable {
     private void clearSelection() {
         pendingCoup.resetCoup();
         casesAccessibles.clear();
+    }
+
+    private boolean canLocalPlayerInteract() {
+        return !isMultiplayerConnected() || currentPlayer == localPlayerColor;
     }
 
     public void jouerPartie() throws InterruptedException {

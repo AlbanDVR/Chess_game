@@ -53,6 +53,8 @@ public class VC extends JFrame implements Observer {
 
     private JLabel currentPlayerLabel;
     private JLabel elapsedTimeLabel;
+    private JLabel multiplayerStatusLabel;
+    private JLabel opponentLabel;
     private JList<String> moveWhitesList;
     private JList<String> moveBlacksList;
     private JList<String> capturedWhitesList;
@@ -119,11 +121,15 @@ public class VC extends JFrame implements Observer {
 
         currentPlayerLabel = new JLabel("Joueur: Blanc");
         elapsedTimeLabel = new JLabel("Temps: 0s");
+        multiplayerStatusLabel = new JLabel("Multi: Hors ligne");
+        opponentLabel = new JLabel("Adversaire: -");
 
         JPanel infoPanel = new JPanel();
         infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
         infoPanel.add(currentPlayerLabel);
         infoPanel.add(elapsedTimeLabel);
+        infoPanel.add(multiplayerStatusLabel);
+        infoPanel.add(opponentLabel);
         infoPanel.add(Box.createVerticalStrut(10));
 
         infoPanel.add(new JLabel("Coups:"));
@@ -190,6 +196,21 @@ public class VC extends JFrame implements Observer {
             themeMenu.add(themeItem);
         }
 
+        JMenu multiplayerMenu = new JMenu("Multijoueur");
+        JMenuItem changeNameItem = new JMenuItem("Changer mon nom");
+        changeNameItem.addActionListener(e -> onChangeName());
+        JMenuItem createGameItem = new JMenuItem("Creer une partie");
+        createGameItem.addActionListener(e -> onCreateGame());
+        JMenuItem joinGameItem = new JMenuItem("Rejoindre une partie");
+        joinGameItem.addActionListener(e -> onJoinGame());
+        JMenuItem disconnectItem = new JMenuItem("Se deconnecter");
+        disconnectItem.addActionListener(e -> jeu.disconnectMultiplayer());
+        multiplayerMenu.add(changeNameItem);
+        multiplayerMenu.add(createGameItem);
+        multiplayerMenu.add(joinGameItem);
+        multiplayerMenu.addSeparator();
+        multiplayerMenu.add(disconnectItem);
+
 
         JMenu helpMenu = new JMenu("Aide");
         JMenuItem aboutItem = new JMenuItem("A propos");
@@ -203,6 +224,7 @@ public class VC extends JFrame implements Observer {
 
         menuBar.add(gameMenu);
         menuBar.add(themeMenu);
+        menuBar.add(multiplayerMenu);
         menuBar.add(helpMenu);
 
         return menuBar;
@@ -363,6 +385,11 @@ public class VC extends JFrame implements Observer {
 
     @Override
     public void update(Observable o, Object arg) {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(() -> update(o, arg));
+            return;
+        }
+
         updateInfoPanel();
         syncMoveAnimation();
         renderBoard(moveAnimation != null);
@@ -371,6 +398,8 @@ public class VC extends JFrame implements Observer {
     private void updateInfoPanel() {
         int currentPlayer = jeu.getCurrentPlayer();
         currentPlayerLabel.setText("Joueur: " + (currentPlayer == 0 ? "Blanc" : "Noir"));
+        multiplayerStatusLabel.setText("Multi: " + jeu.getMultiplayerStatus());
+        opponentLabel.setText("Adversaire: " + jeu.getOpponentName());
 
         updateElapsedTimeLabel();
 
@@ -386,6 +415,24 @@ public class VC extends JFrame implements Observer {
         long minutes = seconds / 60;
         long secs = seconds % 60;
         elapsedTimeLabel.setText(String.format("Temps: %02d:%02d", minutes, secs));
+    }
+
+    private void onChangeName() {
+        String newName = JOptionPane.showInputDialog(this, "Votre nom:", jeu.getPlayerName());
+        if (newName != null) {
+            jeu.setPlayerName(newName);
+        }
+    }
+
+    private void onCreateGame() {
+        jeu.createOnlineGame();
+    }
+
+    private void onJoinGame() {
+        String gameId = JOptionPane.showInputDialog(this, "ID de la partie:", jeu.getCurrentGameId());
+        if (gameId != null) {
+            jeu.joinOnlineGame(gameId);
+        }
     }
 
     private static class MoveAnimation {
