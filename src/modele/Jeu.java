@@ -18,6 +18,8 @@ import java.util.Observable;
 public class Jeu extends Observable implements Runnable {
     private static final String WEBSOCKET_SERVER_URL = "wss://chess.milobrt.fr/ws";
 
+    private Thread threadDeJeu;
+
     public Joueur[] liste = new Joueur[2];
     private Joueur currentPlayer;
     private Plateau plateau;
@@ -50,11 +52,15 @@ public class Jeu extends Observable implements Runnable {
 
     @Override
     public void run() {
+        threadDeJeu = Thread.currentThread();
         try {
             jouerPartie();
         }
         catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            System.out.println("Restart en bonne et due forme");
+        }
+        finally {
+            threadDeJeu = null;
         }
     }
 
@@ -472,6 +478,9 @@ public class Jeu extends Observable implements Runnable {
     }
 
     public void restart() {
+        if (threadDeJeu != null) {
+            threadDeJeu.interrupt();
+        }
         plateau = new Plateau();
         moveNotations.clear();
         capturedPieces.clear();
