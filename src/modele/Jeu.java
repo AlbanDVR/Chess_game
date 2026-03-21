@@ -19,6 +19,7 @@ public class Jeu extends Observable implements Runnable {
     protected Coup nextC;
     private Coup pendingCoup;
     private ArrayList<Case> casesAccessibles = new ArrayList<>();
+
     private final ArrayList<String> moveNotations = new ArrayList<>();
     private final ArrayList<Piece> capturedPieces = new ArrayList<>();
     private Coup lastPlayedMove;
@@ -80,6 +81,67 @@ public class Jeu extends Observable implements Runnable {
 
         switchJoueur();
         updateObservers();
+    }
+
+    public void handleClick(int row, int col) {
+        if (!canLocalPlayerInteract()) {
+            multiplayerStatus = "En attente du tour adverse";
+            updateObservers();
+            return;
+        }
+
+        if (!pendingCoup.ready) {
+            selectDeparture(row, col);
+            updateObservers();
+            return;
+        }
+
+        tryPlayMove(row, col);
+    }
+
+    private void tryPlayMove(int row, int col) {
+        Case caseArrivee = plateau.getCase(row, col);
+
+        if (casesAccessibles.contains(caseArrivee)) {
+            pendingCoup.setArr(row, col);
+            clearSelection();
+            set(new Coup(pendingCoup));
+            return;
+        }
+
+        clearSelection();
+        updateObservers();
+    }
+
+    public boolean echec(Joueur j){
+        // On prend l'adversaire et on calcule tous ces coups possibles
+        Joueur adversaire = j.getId() == 0 ? liste[1] : liste[0];
+        ArrayList<Case> cases = adversaire.chargerListCasesAccessibles();
+
+        // On cherche la case du roi du joueur
+        Case caseRoi = null;
+        for(Case[] row : plateau.getPositions()){
+            for(Case c : row){
+                if(c.getPiece() != null && c.getPiece() instanceof King && c.getPiece().getColor() == j.getId()){
+                    caseRoi = c;
+                    break;
+                }
+            }
+        }
+
+        // On regarde si la case du roi n'est pas dans les cases attaquables
+        int[] coordKing = plateau.getCoord(caseRoi);
+        for(Case caseAtt : cases) {
+            int[] coordAtt = plateau.getCoord(caseAtt);
+            if(coordKing[0] == coordAtt[0] && coordKing[1] == coordAtt[1]){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean coupValide(Coup c){
+        return false;
     }
 
     public int getMoveCount() {
@@ -297,22 +359,6 @@ public class Jeu extends Observable implements Runnable {
         return "" + file + rank;
     }
 
-    public void handleClick(int row, int col) {
-        if (!canLocalPlayerInteract()) {
-            multiplayerStatus = "En attente du tour adverse";
-            updateObservers();
-            return;
-        }
-
-        if (!pendingCoup.ready) {
-            selectDeparture(row, col);
-            updateObservers();
-            return;
-        }
-
-        tryPlayMove(row, col);
-    }
-
     public List<Case> getCasesAccessibles() {
         return new ArrayList<>(casesAccessibles);
     }
@@ -328,20 +374,6 @@ public class Jeu extends Observable implements Runnable {
 
         pendingCoup.setDep(row, col);
         this.casesAccessibles = piece.chargerCasesAccessible(this, this.getPlateau());
-    }
-
-    private void tryPlayMove(int row, int col) {
-        Case caseArrivee = plateau.getCase(row, col);
-
-        if (casesAccessibles.contains(caseArrivee)) {
-            pendingCoup.setArr(row, col);
-            clearSelection();
-            set(new Coup(pendingCoup));
-            return;
-        }
-
-        clearSelection();
-        updateObservers();
     }
 
     private void clearSelection() {
@@ -385,36 +417,5 @@ public class Jeu extends Observable implements Runnable {
     public void updateObservers() {
         setChanged();
         notifyObservers();
-    }
-
-    public boolean echec(Joueur j){
-        // On prend l'adversaire et on calcule tous ces coups possibles
-        Joueur adversaire = j.getId() == 0 ? liste[1] : liste[0];
-        ArrayList<Case> cases = adversaire.chargerListCasesAccessibles();
-
-        // On cherche la case du roi du joueur
-        Case caseRoi = null;
-        for(Case[] row : plateau.getPositions()){
-            for(Case c : row){
-                if(c.getPiece() != null && c.getPiece() instanceof King && c.getPiece().getColor() == j.getId()){
-                    caseRoi = c;
-                    break;
-                }
-            }
-        }
-
-        // On regarde si la case du roi n'est pas dans les cases attaquables
-        int[] coordKing = plateau.getCoord(caseRoi);
-        for(Case caseAtt : cases) {
-            int[] coordAtt = plateau.getCoord(caseAtt);
-            if(coordKing[0] == coordAtt[0] && coordKing[1] == coordAtt[1]){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean coupValide(Coup c){
-        return false;
     }
 }
