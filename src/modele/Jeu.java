@@ -36,7 +36,7 @@ public class Jeu extends Observable implements Runnable {
         liste[0] = new Joueur(0, this);
         liste[1] = new Joueur(1, this);
         gameStartTime = System.currentTimeMillis();
-        currentPlayer = liste[1];
+        currentPlayer = liste[0];
         pendingCoup = new Coup(currentPlayer);
     }
 
@@ -50,11 +50,22 @@ public class Jeu extends Observable implements Runnable {
         }
     }
 
+    public void jouerPartie() throws InterruptedException {
+        while(!partieTerminee()){
+            Coup c = currentPlayer.getCoup();
+            commitMove(c, true);
+        }
+    }
+
+    public boolean partieTerminee(){
+        return false;
+    }
+
     public void set(Coup c){
         nextC = c;
 
         synchronized (this){
-            commitMove(c, true);
+            this.notifyAll();
         }
     }
 
@@ -196,12 +207,7 @@ public class Jeu extends Observable implements Runnable {
                 Coup remoteMove = new Coup(adversaire);
                 remoteMove.setDep(fromRow, fromCol);
                 remoteMove.setArr(toRow, toCol);
-                applyingRemoteMove = true;
-                try {
-                    commitMove(remoteMove, false);
-                } finally {
-                    applyingRemoteMove = false;
-                }
+                set(remoteMove);
             }
 
             @Override
@@ -305,8 +311,6 @@ public class Jeu extends Observable implements Runnable {
         }
 
         tryPlayMove(row, col);
-
-        System.out.println(echec(currentPlayer));
     }
 
     public List<Case> getCasesAccessibles() {
@@ -332,7 +336,7 @@ public class Jeu extends Observable implements Runnable {
         if (casesAccessibles.contains(caseArrivee)) {
             pendingCoup.setArr(row, col);
             clearSelection();
-            set(pendingCoup);
+            set(new Coup(pendingCoup));
             return;
         }
 
@@ -347,18 +351,6 @@ public class Jeu extends Observable implements Runnable {
 
     private boolean canLocalPlayerInteract() {
         return !isMultiplayerConnected() || currentPlayer.equals(localPlayerColor);
-    }
-
-    public void jouerPartie() throws InterruptedException {
-        Joueur joueur = getJoueurSuivant();
-        while(!partieTerminee()){
-            Coup c = joueur.getCoup();
-            setPositions(c);
-        }
-    }
-
-    public boolean partieTerminee(){
-        return true;
     }
 
     public Plateau getPlateau() {
