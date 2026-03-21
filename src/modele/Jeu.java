@@ -53,7 +53,7 @@ public class Jeu extends Observable implements Runnable {
     }
 
     public void jouerPartie() throws InterruptedException {
-        while(!partieTerminee()){
+        while(!mat(currentPlayer)){
             Coup c = currentPlayer.getCoup();
             boolean isRemoteMove = applyingRemoteMove;
             while(!coupValide(c)){
@@ -65,6 +65,7 @@ public class Jeu extends Observable implements Runnable {
                 applyingRemoteMove = false;
             }
         }
+        System.out.println("LA PARTIE EST TERMINEE ! Le joueur " + currentPlayer.getId() + " est MAT.");
     }
 
     public boolean partieTerminee(){
@@ -169,6 +170,40 @@ public class Jeu extends Observable implements Runnable {
         updateObservers();
 
         return !enEchec;
+    }
+
+    public boolean mat(Joueur j) {
+        // s'il n'est pas en échec il ne peut pas être mat
+        if(!echec(j)) {
+            return false;
+        }
+
+        // On parcourt toutes les pièces du joueur
+        for (Case[] ligne : plateau.getPositions()) {
+            for (Case c : ligne) {
+                if (c.getPiece() != null && c.getPiece().getColor() == j.getId() && !(c.getPiece() instanceof King)) {
+                    // On récupère toutes les cases accessibles
+                    ArrayList<Case> dest = c.getPiece().chargerCasesAccessible(this, this.plateau);
+
+                    // On regarde toutes les cases prometteuses
+                    for (Case destination : dest) {
+
+                        // On crée un coup fictif
+                        Coup coupCandidat = new Coup(j);
+                        coupCandidat.setDep(plateau.getCoord(c)[0], plateau.getCoord(c)[1]);
+                        coupCandidat.setArr(plateau.getCoord(destination)[0], plateau.getCoord(destination)[1]);
+
+                        // Si ce coup est valide et empêche l'échec alors, on n'est pas mat
+                        if (coupValide(coupCandidat)) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Si aucune pièce n'est prometteuse, bah c'est mat
+        return true;
     }
 
     public int getMoveCount() {
@@ -439,12 +474,6 @@ public class Jeu extends Observable implements Runnable {
 
     public Plateau getPlateau() {
         return plateau;
-    }
-
-    public Joueur getJoueurSuivant(){
-        this.currentPlayer = (this.currentPlayer.getId() == 0) ? liste[1] : liste[0];
-        this.pendingCoup = new Coup(this.currentPlayer);
-        return currentPlayer;
     }
 
     public void switchJoueur(){
