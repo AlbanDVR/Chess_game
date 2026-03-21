@@ -13,14 +13,14 @@ public class Plateau {
     private final Case[][] positions;
 
     public Plateau() {
-        positions = new Case[][]{{new Case(new Rook(1, this)), new Case(new Knight(1, this)), new Case(new Bishop(1, this)), new Case(new King(1, this)), new Case(new Queen(1, this)), new Case(new Bishop(1, this)), new Case(new Knight(1, this)), new Case(new Rook(1, this))},
+        positions = new Case[][]{{new Case(new Rook(1, this)), new Case(new Knight(1, this)), new Case(new Bishop(1, this)), new Case(new Queen(1, this)), new Case(new King(1, this)), new Case(new Bishop(1, this)), new Case(new Knight(1, this)), new Case(new Rook(1, this))},
                 {new Case(new Pawn(1, this)), new Case(new Pawn(1, this)), new Case(new Pawn(1, this)), new Case(new Pawn(1, this)), new Case(new Pawn(1, this)), new Case(new Pawn(1, this)), new Case(new Pawn(1, this)), new Case(new Pawn(1, this))},
                 {new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null)},
                 {new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null)},
                 {new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null)},
                 {new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null)},
                 {new Case(new Pawn(0, this)), new Case(new Pawn(0, this)), new Case(new Pawn(0, this)), new Case(new Pawn(0, this)), new Case(new Pawn(0, this)), new Case(new Pawn(0, this)), new Case(new Pawn(0, this)), new Case(new Pawn(0, this))},
-                {new Case(new Rook(0, this)), new Case(new Knight(0, this)), new Case(new Bishop(0, this)), new Case(new King(0, this)), new Case(new Queen(0, this)), new Case(new Bishop(0, this)), new Case(new Knight(0, this)), new Case(new Rook(0, this))}};
+                {new Case(new Rook(0, this)), new Case(new Knight(0, this)), new Case(new Bishop(0, this)), new Case(new Queen(0, this)), new Case(new King(0, this)), new Case(new Bishop(0, this)), new Case(new Knight(0, this)), new Case(new Rook(0, this))}};
     }
 
     // Constructeur copie

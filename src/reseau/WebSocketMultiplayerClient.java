@@ -142,7 +142,15 @@ public class WebSocketMultiplayerClient implements MultiplayerClient, WebSocket.
             return;
         }
 
-        listener.onStatus("Message recu: " + message);
+        if ("status".equals(type) || "statuts".equals(type)) {
+            String statusMessage = extractStringField(message, "message");
+            if (statusMessage.isEmpty()) {
+                statusMessage = extractStringField(message, "status");
+            }
+            if (!statusMessage.isEmpty()) {
+                listener.onStatus(statusMessage);
+            }
+        }
     }
 
     private String extractStringField(String json, String field) {

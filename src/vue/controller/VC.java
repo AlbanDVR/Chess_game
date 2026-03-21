@@ -54,13 +54,12 @@ public class VC extends JFrame implements Observer {
 
     private JLabel currentPlayerLabel;
     private JLabel elapsedTimeLabel;
-    private JLabel multiplayerStatusLabel;
+    private JLabel gameLabel;
     private JLabel opponentLabel;
     private JList<String> moveWhitesList;
     private JList<String> moveBlacksList;
     private JList<String> capturedWhitesList;
     private JList<String> capturedBlacksList;
-    private final Timer elapsedTimeTimer;
 
     private Timer moveAnimationTimer;
     private MoveAnimation moveAnimation;
@@ -109,7 +108,7 @@ public class VC extends JFrame implements Observer {
         setSize(700, 500);
         setResizable(false);
 
-        elapsedTimeTimer = new Timer(1000, e -> updateElapsedTimeLabel());
+        Timer elapsedTimeTimer = new Timer(1000, e -> updateElapsedTimeLabel());
         elapsedTimeTimer.start();
 
         lastRenderedMoveCount = jeu.getMoveCount();
@@ -122,14 +121,15 @@ public class VC extends JFrame implements Observer {
 
         currentPlayerLabel = new JLabel("Joueur: Blanc");
         elapsedTimeLabel = new JLabel("Temps: 0s");
-        multiplayerStatusLabel = new JLabel("Multi: Hors ligne");
-        opponentLabel = new JLabel("Adversaire: -");
+        gameLabel = new JLabel("Partie: Locale");
+        opponentLabel = new JLabel();
+        opponentLabel.setVisible(false);
 
         JPanel infoPanel = new JPanel();
         infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
         infoPanel.add(currentPlayerLabel);
         infoPanel.add(elapsedTimeLabel);
-        infoPanel.add(multiplayerStatusLabel);
+        infoPanel.add(gameLabel);
         infoPanel.add(opponentLabel);
         infoPanel.add(Box.createVerticalStrut(10));
 
@@ -361,8 +361,8 @@ public class VC extends JFrame implements Observer {
                 Piece piece = positions[i][j].getPiece();
                 cases[i][j].removeAll();
                 cases[i][j].setBackground((i + j) % 2 == 0
-                        ? currentTheme.getDarkSquare()
-                        : currentTheme.getLightSquare());
+                        ? currentTheme.getLightSquare()
+                        : currentTheme.getDarkSquare());
 
                 if (casesAccessibles.contains(positions[i][j])) {
                     cases[i][j].setBackground(currentTheme.getHighlightSquare());
@@ -392,6 +392,7 @@ public class VC extends JFrame implements Observer {
         }
 
         updateInfoPanel();
+        showPendingNotification();
         syncMoveAnimation();
         renderBoard(moveAnimation != null);
     }
@@ -399,8 +400,13 @@ public class VC extends JFrame implements Observer {
     private void updateInfoPanel() {
         Joueur currentPlayer = jeu.getCurrentPlayer();
         currentPlayerLabel.setText("Joueur: " + (currentPlayer.getId() == 0 ? "Blanc" : "Noir"));
-        multiplayerStatusLabel.setText("Multi: " + jeu.getMultiplayerStatus());
-        opponentLabel.setText("Adversaire: " + jeu.getOpponentName());
+        gameLabel.setText("Partie: " + jeu.getGameDisplayLabel());
+
+        boolean onlineGame = jeu.isOnlineGameActive();
+        opponentLabel.setVisible(onlineGame);
+        if (onlineGame) {
+            opponentLabel.setText("Adversaire: " + jeu.getOpponentName());
+        }
 
         updateElapsedTimeLabel();
 
@@ -408,6 +414,15 @@ public class VC extends JFrame implements Observer {
         moveBlacksList.setListData(jeu.getMoveColumn(1).toArray(new String[0]));
         capturedWhitesList.setListData(jeu.getCapturedColumn(0).toArray(new String[0]));
         capturedBlacksList.setListData(jeu.getCapturedColumn(1).toArray(new String[0]));
+    }
+
+    private void showPendingNotification() {
+        Jeu.UiNotification notification = jeu.consumePendingNotification();
+        if (notification == null || !notification.error()) {
+            return;
+        }
+
+        JOptionPane.showMessageDialog(this, notification.message(), notification.title(), JOptionPane.ERROR_MESSAGE);
     }
 
     private void updateElapsedTimeLabel() {

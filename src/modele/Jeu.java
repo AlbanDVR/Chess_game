@@ -28,8 +28,9 @@ public class Jeu extends Observable implements Runnable {
     private String opponentName = "-";
     private String multiplayerStatus = "Hors ligne";
     private String currentGameId = "-";
+    private UiNotification pendingNotification;
     private MultiplayerClient multiplayerClient;
-    private boolean applyingRemoteMove;
+    private volatile boolean applyingRemoteMove;
     private Joueur localPlayerColor = liste[1];
 
     public Jeu(){
@@ -54,10 +55,15 @@ public class Jeu extends Observable implements Runnable {
     public void jouerPartie() throws InterruptedException {
         while(!partieTerminee()){
             Coup c = currentPlayer.getCoup();
+            boolean isRemoteMove = applyingRemoteMove;
             while(!coupValide(c)){
                 c = currentPlayer.getCoup();
+                isRemoteMove = applyingRemoteMove;
             }
-            commitMove(c, true);
+            commitMove(c, !isRemoteMove);
+            if (isRemoteMove) {
+                applyingRemoteMove = false;
+            }
         }
     }
 
@@ -155,10 +161,12 @@ public class Jeu extends Observable implements Runnable {
 
         // On vérifie s'il est en échec
         boolean enEchec = echec(c.getJoueur());
-        System.out.println("Test Coup: " + c.getJoueur().getId() + " | Echec après coup ? " + enEchec);
 
         // On retourne à notre vrai plateau comme si rien ne s'était passé
         this.plateau = savePlateau;
+
+        pushNotification(enEchec ? "Coup invalide: met votre roi en echec !" : "Coup valide", enEchec, "Règles");
+        updateObservers();
 
         return !enEchec;
     }
@@ -190,6 +198,17 @@ public class Jeu extends Observable implements Runnable {
         return multiplayerStatus;
     }
 
+    public String getGameDisplayLabel() {
+        if (isOnlineGameActive()) {
+            return currentGameId;
+        }
+        return "Locale";
+    }
+
+    public boolean isOnlineGameActive() {
+        return currentGameId != null && !currentGameId.trim().isEmpty() && !"-".equals(currentGameId);
+    }
+
     public String getCurrentGameId() {
         return currentGameId;
     }
@@ -217,18 +236,25 @@ public class Jeu extends Observable implements Runnable {
         localPlayerColor = liste[0];
         multiplayerClient.sendCreateGame();
         multiplayerStatus = "Creation de partie...";
+        pushNotification("Creation de partie en cours...", false);
         updateObservers();
     }
 
     public void joinOnlineGame(String gameId) {
         connectIfNeeded();
-        if (!isMultiplayerConnected() || gameId == null || gameId.trim().isEmpty()) {
+        if (!isMultiplayerConnected()) {
+            return;
+        }
+        if (gameId == null || gameId.trim().isEmpty()) {
+            pushNotification("ID de partie invalide.", true);
+            updateObservers();
             return;
         }
         localPlayerColor = liste[1];
         currentGameId = gameId.trim();
         multiplayerClient.sendJoinGame(currentGameId);
         multiplayerStatus = "Connexion a " + currentGameId + "...";
+        pushNotification("Connexion a " + currentGameId + "...", false);
         updateObservers();
     }
 
@@ -241,6 +267,7 @@ public class Jeu extends Observable implements Runnable {
         opponentName = "-";
         currentGameId = "-";
         multiplayerStatus = "Hors ligne";
+        pushNotification("Mode multijoueur desactive.", false);
         updateObservers();
     }
 
@@ -257,6 +284,7 @@ public class Jeu extends Observable implements Runnable {
             public void onConnected() {
                 multiplayerStatus = "Connecte";
                 multiplayerClient.sendSetName(playerName);
+                pushNotification("Connecte au serveur.", false);
                 updateObservers();
             }
 
@@ -264,6 +292,7 @@ public class Jeu extends Observable implements Runnable {
             public void onGameCreated(String gameId) {
                 currentGameId = gameId;
                 multiplayerStatus = "Partie creee: " + gameId;
+                pushNotification("Partie creee: " + gameId, false);
                 updateObservers();
             }
 
@@ -271,6 +300,7 @@ public class Jeu extends Observable implements Runnable {
             public void onJoinedGame(String gameId) {
                 currentGameId = gameId;
                 multiplayerStatus = "Partie rejointe: " + gameId;
+                pushNotification("Partie rejointe: " + gameId, false);
                 updateObservers();
             }
 
@@ -288,18 +318,21 @@ public class Jeu extends Observable implements Runnable {
                 Coup remoteMove = new Coup(adversaire);
                 remoteMove.setDep(fromRow, fromCol);
                 remoteMove.setArr(toRow, toCol);
+                applyingRemoteMove = true;
                 set(remoteMove);
             }
 
             @Override
             public void onStatus(String status) {
                 multiplayerStatus = status;
+                pushNotification(status, true);
                 updateObservers();
             }
 
             @Override
             public void onDisconnected(String reason) {
                 multiplayerStatus = "Deconnecte" + (reason == null || reason.isEmpty() ? "" : (": " + reason));
+                pushNotification(multiplayerStatus, true);
                 updateObservers();
             }
         });
@@ -437,4 +470,28 @@ public class Jeu extends Observable implements Runnable {
         setChanged();
         notifyObservers();
     }
+
+    public synchronized UiNotification consumePendingNotification() {
+        UiNotification notification = pendingNotification;
+        pendingNotification = null;
+        return notification;
+    }
+
+    private synchronized void pushNotification(String message, boolean error) {
+        if (message == null || message.trim().isEmpty()) {
+            return;
+        }
+        pendingNotification = new UiNotification(message.trim(), error, "Multijoueur");
+    }
+
+    private synchronized void pushNotification(String message, boolean error, String title) {
+        if (message == null || message.trim().isEmpty()) {
+            return;
+        }
+        pendingNotification = new UiNotification(message.trim(), error, title);
+    }
+
+    public record UiNotification(String message, boolean error, String title) {
+    }
+
 }
