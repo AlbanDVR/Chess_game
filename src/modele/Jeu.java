@@ -65,7 +65,8 @@ public class Jeu extends Observable implements Runnable {
                 applyingRemoteMove = false;
             }
         }
-        System.out.println("LA PARTIE EST TERMINEE ! Le joueur " + currentPlayer.getId() + " est MAT.");
+        pushNotification("LA PARTIE EST TERMINEE ! Le joueur " + currentPlayer.getId() + " est MAT.", true, "Partie");
+        updateObservers();
     }
 
     public boolean partieTerminee(){
@@ -165,9 +166,6 @@ public class Jeu extends Observable implements Runnable {
 
         // On retourne à notre vrai plateau comme si rien ne s'était passé
         this.plateau = savePlateau;
-
-        pushNotification(enEchec ? "Coup invalide: met votre roi en echec !" : "Coup valide", enEchec, "Règles");
-        updateObservers();
 
         return !enEchec;
     }
@@ -416,6 +414,10 @@ public class Jeu extends Observable implements Runnable {
         currentPlayer = liste[0];
         localPlayerColor = liste[0];
         gameStartTime = System.currentTimeMillis();
+
+        // Relance le thread pour que la boucle JouerPartie redémarre
+        new Thread(this).start();
+
         updateObservers();
     }
 

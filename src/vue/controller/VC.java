@@ -418,11 +418,30 @@ public class VC extends JFrame implements Observer {
 
     private void showPendingNotification() {
         Jeu.UiNotification notification = jeu.consumePendingNotification();
-        if (notification == null || !notification.error()) {
+        if (notification == null) {
             return;
         }
 
-        JOptionPane.showMessageDialog(this, notification.message(), notification.title(), JOptionPane.ERROR_MESSAGE);
+        if (notification.message().contains("MAT")) {
+            Object[] options = {"Recommencer", "Quitter"};
+            int n = JOptionPane.showOptionDialog(this,
+                    notification.message(),
+                    "Fin de partie",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    options,
+                    options[0]);
+
+            if (n == JOptionPane.YES_OPTION) {
+                jeu.restart();
+            } else if (n == JOptionPane.NO_OPTION) {
+                dispose();
+            }
+        }
+        else if (notification.error()) {
+            JOptionPane.showMessageDialog(this, notification.message(), notification.title(), JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void updateElapsedTimeLabel() {
