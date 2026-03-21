@@ -1,6 +1,7 @@
 package modele.mouvement;
 
 import modele.Case;
+import modele.Joueur;
 import modele.Plateau;
 
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ public class HV extends DCA{
     }
 
     @Override
-    public ArrayList<Case> getMesCasesAccessibles(int currentPlayer, Case currentCase) {
+    public ArrayList<Case> getMesCasesAccessibles(Joueur currentPlayer, Case currentCase) {
         ArrayList<Case> caseAccessible = new ArrayList<>();
 
         Plateau plateau = getPlateau();
@@ -33,7 +34,7 @@ public class HV extends DCA{
         return caseAccessible;
     }
 
-    private ArrayList<Case> explorerDirection(Case startCase, Direction direction, int currentPlayer, Plateau plateau) {
+    private ArrayList<Case> explorerDirection(Case startCase, Direction direction, Joueur currentPlayer, Plateau plateau) {
         ArrayList<Case> cases = new ArrayList<>();
         Case currentCase = startCase;
 
@@ -52,7 +53,7 @@ public class HV extends DCA{
             }
 
             // Si c'est une pièce de l'adversaire, on l'ajoute et on arrête
-            else if (nextCase.getPiece().getColor() != currentPlayer) {
+            else if (nextCase.getPiece().getColor() != currentPlayer.getId()) {
                 cases.add(nextCase);
                 break;
             }

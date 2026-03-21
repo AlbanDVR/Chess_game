@@ -1,6 +1,7 @@
 package modele.mouvement;
 
 import modele.Case;
+import modele.Joueur;
 import modele.Plateau;
 
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ public class MouvPawn extends DCA{
     }
 
     @Override
-    public ArrayList<Case> getMesCasesAccessibles(int currentPlayer, Case currentCase) {
+    public ArrayList<Case> getMesCasesAccessibles(Joueur currentPlayer, Case currentCase) {
         ArrayList<Case> caseAccessible = new ArrayList<>();
 
         Plateau plateau = getPlateau();
@@ -28,14 +29,14 @@ public class MouvPawn extends DCA{
         return caseAccessible;
     }
 
-    private ArrayList<Case> explorerDirection(Case startCase, Direction direction, int currentPlayer, Plateau plateau) {
+    private ArrayList<Case> explorerDirection(Case startCase, Direction direction, Joueur currentPlayer, Plateau plateau) {
         ArrayList<Case> cases = new ArrayList<>();
         Case currentCase = startCase;
         int porteeMax = 1;
 
         Direction dirAvant = (currentCase.getPiece().getColor() == 0) ? Direction.HAUT : Direction.BAS;
 
-        int y = plateau.getCoord(startCase)[1];
+        int y = plateau.getCoord(startCase)[0];
         if ((startCase.getPiece().getColor() == 0 && y == 6) || (startCase.getPiece().getColor() == 1 && y == 1)) {
                 porteeMax = 2;
         }
@@ -60,7 +61,7 @@ public class MouvPawn extends DCA{
                 }
             }
             else {
-                if (nextCase.getPiece() != null && nextCase.getPiece().getColor() != currentPlayer) {
+                if (nextCase.getPiece() != null && nextCase.getPiece().getColor() != currentPlayer.getId()) {
                     cases.add(nextCase);
                 }
                 break;

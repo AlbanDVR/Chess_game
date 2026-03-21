@@ -3,6 +3,7 @@ package vue.controller;
 import modele.Case;
 import modele.Coup;
 import modele.Jeu;
+import modele.Joueur;
 import modele.pieces.Piece;
 import vue.theme.Theme;
 import vue.theme.Themes;
@@ -396,8 +397,8 @@ public class VC extends JFrame implements Observer {
     }
 
     private void updateInfoPanel() {
-        int currentPlayer = jeu.getCurrentPlayer();
-        currentPlayerLabel.setText("Joueur: " + (currentPlayer == 0 ? "Blanc" : "Noir"));
+        Joueur currentPlayer = jeu.getCurrentPlayer();
+        currentPlayerLabel.setText("Joueur: " + (currentPlayer.getId() == 0 ? "Blanc" : "Noir"));
         multiplayerStatusLabel.setText("Multi: " + jeu.getMultiplayerStatus());
         opponentLabel.setText("Adversaire: " + jeu.getOpponentName());
 

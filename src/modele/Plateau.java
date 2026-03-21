@@ -31,7 +31,7 @@ public class Plateau {
         for (int i = 0; i < positions.length; i++) {
             for (int j = 0; j < positions[i].length; j++) {
                 if (positions[i][j] == target) {
-                    return new int[]{j, i};
+                    return new int[]{i, j};
                 }
             }
         }
@@ -71,8 +71,8 @@ public class Plateau {
         if (foundI == -1) return null;
 
         // On calcul la case adjacente
-        int newI = foundI + dir.getDx();
-        int newJ = foundJ + dir.getDy();
+        int newI = foundI + dir.getDy();
+        int newJ = foundJ + dir.getDx();
 
         // On vérifie qu'elle est dans le plateau, notamment pour les pièces proches du bord
         if (newI >= 0 && newI < 8 && newJ >= 0 && newJ < 8) {

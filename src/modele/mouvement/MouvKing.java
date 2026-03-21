@@ -1,6 +1,7 @@
 package modele.mouvement;
 
 import modele.Case;
+import modele.Joueur;
 import modele.Plateau;
 
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ public class MouvKing extends DCA{
     }
 
     @Override
-    public ArrayList<Case> getMesCasesAccessibles(int currentPlayer, Case currentCase) {
+    public ArrayList<Case> getMesCasesAccessibles(Joueur currentPlayer, Case currentCase) {
         ArrayList<Case> caseAccessible = new ArrayList<>();
 
         Plateau plateau = getPlateau();
@@ -37,7 +38,7 @@ public class MouvKing extends DCA{
         return caseAccessible;
     }
 
-    private ArrayList<Case> explorerDirection(Case startCase, Direction direction, int currentPlayer, Plateau plateau) {
+    private ArrayList<Case> explorerDirection(Case startCase, Direction direction, Joueur currentPlayer, Plateau plateau) {
         ArrayList<Case> cases = new ArrayList<>();
 
         Case nextCase = plateau.getCaseAdj(startCase, direction);
@@ -49,7 +50,7 @@ public class MouvKing extends DCA{
             }
 
             // Si c'est une pièce adverse, on peut la prendre
-            else if (nextCase.getPiece().getColor() != currentPlayer) {
+            else if (nextCase.getPiece().getColor() != currentPlayer.getId()) {
                 cases.add(nextCase);
             }
         }

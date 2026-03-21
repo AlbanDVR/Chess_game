@@ -1,5 +1,6 @@
 package modele;
 
+import modele.pieces.King;
 import modele.pieces.Piece;
 import reseau.MultiplayerClient;
 import reseau.MultiplayerEventListener;
@@ -12,8 +13,8 @@ import java.util.Observable;
 public class Jeu extends Observable implements Runnable {
     private static final String WEBSOCKET_SERVER_URL = "wss://chess.milobrt.fr/ws";
 
-    private final Joueur[] liste = new Joueur[2];
-    private int currentPlayer = 0;
+    public Joueur[] liste = new Joueur[2];
+    private Joueur currentPlayer;
     private Plateau plateau;
     protected Coup nextC;
     private final Coup pendingCoup = new Coup();
@@ -28,13 +29,14 @@ public class Jeu extends Observable implements Runnable {
     private String currentGameId = "-";
     private MultiplayerClient multiplayerClient;
     private boolean applyingRemoteMove;
-    private int localPlayerColor = 0;
+    private Joueur localPlayerColor = liste[1];
 
     public Jeu(){
         plateau = new Plateau();
-        liste[0] = new Joueur(this);
-        liste[1] = new Joueur(this);
+        liste[0] = new Joueur(0, this);
+        liste[1] = new Joueur(1, this);
         gameStartTime = System.currentTimeMillis();
+        currentPlayer = liste[1];
     }
 
     @Override
@@ -119,7 +121,7 @@ public class Jeu extends Observable implements Runnable {
         if (!isMultiplayerConnected()) {
             return;
         }
-        localPlayerColor = 0;
+        localPlayerColor = liste[0];
         multiplayerClient.sendCreateGame();
         multiplayerStatus = "Creation de partie...";
         updateObservers();
@@ -130,7 +132,7 @@ public class Jeu extends Observable implements Runnable {
         if (!isMultiplayerConnected() || gameId == null || gameId.trim().isEmpty()) {
             return;
         }
-        localPlayerColor = 1;
+        localPlayerColor = liste[1];
         currentGameId = gameId.trim();
         multiplayerClient.sendJoinGame(currentGameId);
         multiplayerStatus = "Connexion a " + currentGameId + "...";
@@ -142,7 +144,7 @@ public class Jeu extends Observable implements Runnable {
             multiplayerClient.close();
             multiplayerClient = null;
         }
-        localPlayerColor = 0;
+        localPlayerColor = liste[0];
         opponentName = "-";
         currentGameId = "-";
         multiplayerStatus = "Hors ligne";
@@ -254,8 +256,8 @@ public class Jeu extends Observable implements Runnable {
         lastPlayedMove = null;
         pendingCoup.resetCoup();
         casesAccessibles.clear();
-        currentPlayer = 0;
-        localPlayerColor = 0;
+        currentPlayer = liste[0];
+        localPlayerColor = liste[0];
         gameStartTime = System.currentTimeMillis();
         updateObservers();
     }
@@ -301,6 +303,8 @@ public class Jeu extends Observable implements Runnable {
         }
 
         tryPlayMove(row, col);
+
+        System.out.println(echec(currentPlayer));
     }
 
     public List<Case> getCasesAccessibles() {
@@ -312,7 +316,7 @@ public class Jeu extends Observable implements Runnable {
         Case departure = plateau.getCase(row, col);
         Piece piece = departure.getPiece();
 
-        if (piece == null || piece.getColor() != currentPlayer) {
+        if (piece == null || piece.getColor() != currentPlayer.getId()) {
             return;
         }
 
@@ -340,12 +344,12 @@ public class Jeu extends Observable implements Runnable {
     }
 
     private boolean canLocalPlayerInteract() {
-        return !isMultiplayerConnected() || currentPlayer == localPlayerColor;
+        return !isMultiplayerConnected() || currentPlayer.equals(localPlayerColor);
     }
 
     public void jouerPartie() throws InterruptedException {
+        Joueur joueur = getJoueurSuivant();
         while(!partieTerminee()){
-            Joueur joueur = getJoueurSuivant();
             Coup c = joueur.getCoup();
             setPositions(c);
         }
@@ -360,20 +364,20 @@ public class Jeu extends Observable implements Runnable {
     }
 
     public Joueur getJoueurSuivant(){
-        if(currentPlayer == 0){
-            this.currentPlayer = 1;
+        if(currentPlayer.getId() == 0){
+            this.currentPlayer = liste[1];
         }
         else {
-            this.currentPlayer = 0;
+            this.currentPlayer = liste[0];
         }
-        return liste[currentPlayer];
+        return currentPlayer;
     }
 
     public void switchJoueur(){
-        this.currentPlayer = (this.currentPlayer == 0) ? 1 : 0;
+        this.currentPlayer = (this.currentPlayer.getId() == 0) ? liste[1] : liste[0];
     }
 
-    public int getCurrentPlayer() {
+    public Joueur getCurrentPlayer() {
         return currentPlayer;
     }
 
@@ -392,5 +396,33 @@ public class Jeu extends Observable implements Runnable {
         setChanged();
         notifyObservers();
     }
+
+    public boolean echec(Joueur j){
+        // On prend l'adversaire et on calcule tous ces coups possibles
+        Joueur adversaire = j.getId() == 0 ? liste[1] : liste[0];
+        ArrayList<Case> cases = adversaire.chargerListCasesAccessibles();
+
+        // On cherche la case du roi du joueur
+        Case caseRoi = null;
+        for(Case[] row : plateau.getPositions()){
+            for(Case c : row){
+                if(c.getPiece() != null && c.getPiece() instanceof King && c.getPiece().getColor() == j.getId()){
+                    caseRoi = c;
+                    break;
+                }
+            }
+        }
+
+        // On regarde si la case du roi n'est pas dans les cases attaquables
+        int[] coordKing = plateau.getCoord(caseRoi);
+        for(Case caseAtt : cases) {
+            int[] coordAtt = plateau.getCoord(caseAtt);
+            if(coordKing[0] == coordAtt[0] && coordKing[1] == coordAtt[1]){
+                return true;
+            }
+        }
+        return false;
+    }
+
 
 }
