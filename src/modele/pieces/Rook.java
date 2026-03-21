@@ -18,7 +18,7 @@ public class Rook extends Piece {
 
     @Override
     public Piece copy(Plateau copyPlateau) {
-        return new Rook(this.getColor(), copyPlateau);
+        return copyMovedState(new Rook(this.getColor(), copyPlateau));
     }
 
     @Override

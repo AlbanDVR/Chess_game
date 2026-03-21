@@ -5,6 +5,7 @@ public class Coup {
 
     private int[] arr = new int[2];
     private int[] dep = new int[2];
+    private String promotionPiece;
 
     public boolean ready = false;
 
@@ -18,6 +19,7 @@ public class Coup {
         this.dep[0] = other.dep[0];
         this.dep[1] = other.dep[1];
         this.ready = other.ready;
+        this.promotionPiece = other.promotionPiece;
         this.joueur = joueur;
     }
 
@@ -44,8 +46,17 @@ public class Coup {
         return this.joueur;
     }
 
+    public String getPromotionPiece() {
+        return promotionPiece;
+    }
+
+    public void setPromotionPiece(String promotionPiece) {
+        this.promotionPiece = promotionPiece;
+    }
+
     public void resetCoup(){
         ready = false;
+        promotionPiece = null;
     }
 
 }

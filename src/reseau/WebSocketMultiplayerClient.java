@@ -42,11 +42,21 @@ public class WebSocketMultiplayerClient implements MultiplayerClient, WebSocket.
     }
 
     @Override
-    public void sendMove(int fromRow, int fromCol, int toRow, int toCol) {
-        sendText("{\"type\":\"move\",\"fromRow\":" + fromRow
-                + ",\"fromCol\":" + fromCol
-                + ",\"toRow\":" + toRow
-                + ",\"toCol\":" + toCol + "}");
+    public void sendMove(int fromRow, int fromCol, int toRow, int toCol, String promotionPiece) {
+        StringBuilder payload = new StringBuilder("{\"type\":\"move\",\"fromRow\":")
+                .append(fromRow)
+                .append(",\"fromCol\":").append(fromCol)
+                .append(",\"toRow\":").append(toRow)
+                .append(",\"toCol\":").append(toCol);
+
+        if (promotionPiece != null && !promotionPiece.trim().isEmpty()) {
+            payload.append(",\"promotion\":\"")
+                    .append(escapeJson(promotionPiece.trim()))
+                    .append("\"");
+        }
+
+        payload.append("}");
+        sendText(payload.toString());
     }
 
     @Override
@@ -137,7 +147,8 @@ public class WebSocketMultiplayerClient implements MultiplayerClient, WebSocket.
             Integer toRow = extractIntField(message, "toRow");
             Integer toCol = extractIntField(message, "toCol");
             if (fromRow != null && fromCol != null && toRow != null && toCol != null) {
-                listener.onRemoteMove(fromRow, fromCol, toRow, toCol);
+                String promotion = extractStringField(message, "promotion");
+                listener.onRemoteMove(fromRow, fromCol, toRow, toCol, promotion);
             }
             return;
         }

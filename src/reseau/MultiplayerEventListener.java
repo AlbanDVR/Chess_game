@@ -9,7 +9,7 @@ public interface MultiplayerEventListener {
 
     void onRemoteName(String name);
 
-    void onRemoteMove(int fromRow, int fromCol, int toRow, int toCol);
+    void onRemoteMove(int fromRow, int fromCol, int toRow, int toCol, String promotionPiece);
 
     void onStatus(String status);
 

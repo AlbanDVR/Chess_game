@@ -19,7 +19,7 @@ public class Queen extends Piece {
 
     @Override
     public Piece copy(Plateau copyPlateau) {
-        return new Queen(this.getColor(), copyPlateau);
+        return copyMovedState(new Queen(this.getColor(), copyPlateau));
     }
 
     @Override

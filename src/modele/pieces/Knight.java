@@ -18,7 +18,7 @@ public class Knight extends Piece {
 
     @Override
     public Piece copy(Plateau copyPlateau) {
-        return new Knight(this.getColor(), copyPlateau);
+        return copyMovedState(new Knight(this.getColor(), copyPlateau));
     }
 
     @Override

@@ -18,7 +18,7 @@ public class Bishop extends Piece {
 
     @Override
     public Piece copy(Plateau copyPlateau) {
-        return new Bishop(this.getColor(), copyPlateau);
+        return copyMovedState(new Bishop(this.getColor(), copyPlateau));
     }
 
     @Override

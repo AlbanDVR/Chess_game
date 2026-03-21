@@ -19,7 +19,7 @@ public class Joueur {
         for(Case[] row : jeu.getPlateau().getPositions()){
             for(Case c : row){
                 if(c.getPiece() != null && c.getPiece().getColor() == id) {
-                    ListCasesAccessibles.addAll(c.getPiece().chargerCasesAccessible(jeu, jeu.getPlateau()));
+                    ListCasesAccessibles.addAll(c.getPiece().chargerCasesAttaquees(jeu, jeu.getPlateau()));
                 }
             }
         }

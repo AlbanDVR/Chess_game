@@ -1,7 +1,12 @@
 package modele;
 
 import modele.pieces.King;
+import modele.pieces.Bishop;
+import modele.pieces.Knight;
+import modele.pieces.Pawn;
 import modele.pieces.Piece;
+import modele.pieces.Queen;
+import modele.pieces.Rook;
 import reseau.MultiplayerClient;
 import reseau.MultiplayerEventListener;
 import reseau.WebSocketMultiplayerClient;
@@ -29,6 +34,7 @@ public class Jeu extends Observable implements Runnable {
     private String multiplayerStatus = "Hors ligne";
     private String currentGameId = "-";
     private UiNotification pendingNotification;
+    private String pendingPromotionChoice;
     private MultiplayerClient multiplayerClient;
     private volatile boolean applyingRemoteMove;
     private Joueur localPlayerColor = liste[1];
@@ -87,7 +93,7 @@ public class Jeu extends Observable implements Runnable {
         lastPlayedMove = new Coup(currentPlayer, c);
 
         if (broadcastMove && isMultiplayerConnected() && !applyingRemoteMove) {
-            multiplayerClient.sendMove(c.getDep()[0], c.getDep()[1], c.getArr()[0], c.getArr()[1]);
+            multiplayerClient.sendMove(c.getDep()[0], c.getDep()[1], c.getArr()[0], c.getArr()[1], c.getPromotionPiece());
         }
 
         switchJoueur();
@@ -115,8 +121,13 @@ public class Jeu extends Observable implements Runnable {
 
         if (casesAccessibles.contains(caseArrivee)) {
             pendingCoup.setArr(row, col);
+            Coup playedMove = new Coup(currentPlayer, pendingCoup);
+            if (isPromotionMove(playedMove)) {
+                playedMove.setPromotionPiece(normalizePromotionChoice(pendingPromotionChoice));
+            }
+            pendingPromotionChoice = null;
             clearSelection();
-            set(new Coup(currentPlayer, pendingCoup));
+            set(playedMove);
             return;
         }
 
@@ -158,8 +169,8 @@ public class Jeu extends Observable implements Runnable {
         // On met dans notre jeu un plateau test identique au vrai
         this.plateau = new Plateau(savePlateau);
 
-        // effectue le test
-        setPositions(c);
+        // effectue le test sans polluer les captures reelles
+        applyMove(c, false);
 
         // On vérifie s'il est en échec
         boolean enEchec = echec(c.getJoueur());
@@ -247,7 +258,7 @@ public class Jeu extends Observable implements Runnable {
         if (lastPlayedMove == null) {
             return null;
         }
-        return new Coup(currentPlayer, lastPlayedMove   );
+        return new Coup(lastPlayedMove.getJoueur(), lastPlayedMove);
     }
 
     public List<String> getMoveNotations() {
@@ -381,11 +392,12 @@ public class Jeu extends Observable implements Runnable {
             }
 
             @Override
-            public void onRemoteMove(int fromRow, int fromCol, int toRow, int toCol) {
+            public void onRemoteMove(int fromRow, int fromCol, int toRow, int toCol, String promotionPiece) {
                 Joueur adversaire = (localPlayerColor.getId() == 0) ? liste[1] : liste[0];
                 Coup remoteMove = new Coup(adversaire);
                 remoteMove.setDep(fromRow, fromCol);
                 remoteMove.setArr(toRow, toCol);
+                remoteMove.setPromotionPiece(normalizePromotionChoice(promotionPiece));
                 applyingRemoteMove = true;
                 set(remoteMove);
             }
@@ -445,6 +457,7 @@ public class Jeu extends Observable implements Runnable {
         capturedPieces.clear();
         lastPlayedMove = null;
         pendingCoup.resetCoup();
+        pendingPromotionChoice = null;
         casesAccessibles.clear();
         currentPlayer = liste[0];
         localPlayerColor = liste[0];
@@ -456,14 +469,90 @@ public class Jeu extends Observable implements Runnable {
         updateObservers();
     }
 
+    public void loadCastleTestBoard() {
+        for (Case[] row : plateau.getPositions()) {
+            for (Case c : row) {
+                c.setPiece(null);
+            }
+        }
+
+        // White pieces for immediate king/queen side castling tests.
+        plateau.getCase(7, 4).setPiece(new King(0, plateau));
+        plateau.getCase(7, 0).setPiece(new Rook(0, plateau));
+        plateau.getCase(7, 7).setPiece(new Rook(0, plateau));
+
+        // Black pieces kept only to preserve both kings on board.
+        plateau.getCase(0, 4).setPiece(new King(1, plateau));
+        plateau.getCase(0, 0).setPiece(new Rook(1, plateau));
+        plateau.getCase(0, 7).setPiece(new Rook(1, plateau));
+
+        moveNotations.clear();
+        capturedPieces.clear();
+        lastPlayedMove = null;
+        pendingCoup.resetCoup();
+        pendingPromotionChoice = null;
+        casesAccessibles.clear();
+        currentPlayer = liste[0];
+        gameStartTime = System.currentTimeMillis();
+
+        pushNotification("Plateau de test roque charge.", false);
+        updateObservers();
+    }
+
     private String buildMoveNotation(Coup c) {
+        int depCol = c.getDep()[1];
+        int arrCol = c.getArr()[1];
+        Piece depPiece = plateau.getCase(c.getDep()[0], c.getDep()[1]).getPiece();
+
+        if (depPiece instanceof King && Math.abs(arrCol - depCol) == 2) {
+            return arrCol > depCol ? "O-O" : "O-O-O";
+        }
+
         Case dep = plateau.getCase(c.getDep()[0], c.getDep()[1]);
         Piece movedPiece = dep.getPiece();
         if (movedPiece == null) {
             return "";
         }
 
-        return piecePrefix(movedPiece) + coordinatesToAlgebraic(c.getArr()[0], c.getArr()[1]);
+        String notation = piecePrefix(movedPiece) + coordinatesToAlgebraic(c.getArr()[0], c.getArr()[1]);
+        if (isEnPassantMove(c, movedPiece)) {
+            notation += " e.p.";
+        }
+        if (movedPiece instanceof Pawn && (c.getArr()[0] == 0 || c.getArr()[0] == 7)) {
+            notation += "=" + promotionToNotation(c.getPromotionPiece());
+        }
+        return notation;
+    }
+
+    private boolean isEnPassantMove(Coup move, Piece movedPiece) {
+        if (!(movedPiece instanceof Pawn)) {
+            return false;
+        }
+
+        int depRow = move.getDep()[0];
+        int depCol = move.getDep()[1];
+        int arrRow = move.getArr()[0];
+        int arrCol = move.getArr()[1];
+        if (Math.abs(arrCol - depCol) != 1 || Math.abs(arrRow - depRow) != 1) {
+            return false;
+        }
+
+        Case arrival = plateau.getCase(arrRow, arrCol);
+        if (arrival.getPiece() != null) {
+            return false;
+        }
+
+        Case capturedSquare = plateau.getCase(depRow, arrCol);
+        Piece capturedPiece = capturedSquare.getPiece();
+        return capturedPiece instanceof Pawn && capturedPiece.getColor() != movedPiece.getColor();
+    }
+
+    private String promotionToNotation(String promotionPiece) {
+        String normalized = normalizePromotionChoice(promotionPiece);
+        if ("Knight".equals(normalized)) {
+            return "N";
+        }
+        return String.valueOf(normalized.charAt(0));
     }
 
     private String piecePrefix(Piece piece) {
@@ -502,7 +591,31 @@ public class Jeu extends Observable implements Runnable {
 
     private void clearSelection() {
         pendingCoup.resetCoup();
+        pendingPromotionChoice = null;
         casesAccessibles.clear();
+    }
+
+    public boolean isPendingPromotionDestination(int row, int col) {
+        if (!pendingCoup.ready) {
+            return false;
+        }
+
+        Case dep = plateau.getCase(pendingCoup.getDep()[0], pendingCoup.getDep()[1]);
+        if (!(dep.getPiece() instanceof Pawn)) {
+            return false;
+        }
+
+        Case target = plateau.getCase(row, col);
+        if (!casesAccessibles.contains(target)) {
+            return false;
+        }
+
+        int targetRow = row;
+        return targetRow == 0 || targetRow == 7;
+    }
+
+    public void setPendingPromotionChoice(String promotionPiece) {
+        pendingPromotionChoice = normalizePromotionChoice(promotionPiece);
     }
 
     private boolean canLocalPlayerInteract() {
@@ -522,14 +635,119 @@ public class Jeu extends Observable implements Runnable {
     }
 
     public void setPositions(Coup c){
+        applyMove(c, true);
+    }
+
+    private void applyMove(Coup c, boolean trackCapture) {
         Case dep = this.plateau.getCase(c.getDep()[0],  c.getDep()[1]);
         Case arr =  this.plateau.getCase(c.getArr()[0],  c.getArr()[1]);
-        Piece capturedPiece = arr.getPiece();
-        if (capturedPiece != null) {
+        Piece movedPiece = dep.getPiece();
+        if (movedPiece == null) {
+            return;
+        }
+
+        Case capturedCase = movedPiece.resolveCapturedCase(this.plateau, c);
+        Piece capturedPiece = (capturedCase == null) ? null : capturedCase.getPiece();
+        if (trackCapture && capturedPiece != null) {
             capturedPieces.add(capturedPiece);
         }
-        arr.setPiece(dep.getPiece());
+
+        arr.setPiece(movedPiece);
         dep.setPiece(null);
+
+        if (capturedCase != null && capturedCase != arr) {
+            capturedCase.setPiece(null);
+        }
+
+        movedPiece.onMoveApplied(this, this.plateau, c);
+        Piece postMovePiece = movedPiece.resolvePostMovePiece(this, this.plateau, c);
+        if (postMovePiece != null) {
+            postMovePiece.setMoved(true);
+            arr.setPiece(postMovePiece);
+        }
+    }
+
+    private boolean isPromotionMove(Coup move) {
+        Case dep = plateau.getCase(move.getDep()[0], move.getDep()[1]);
+        if (!(dep.getPiece() instanceof Pawn)) {
+            return false;
+        }
+        int targetRow = move.getArr()[0];
+        return targetRow == 0 || targetRow == 7;
+    }
+
+    public Piece createPromotionPiece(String promotionPiece, int color) {
+        String normalized = normalizePromotionChoice(promotionPiece);
+        if ("Rook".equals(normalized)) {
+            return new Rook(color, plateau);
+        }
+        if ("Bishop".equals(normalized)) {
+            return new Bishop(color, plateau);
+        }
+        if ("Knight".equals(normalized)) {
+            return new Knight(color, plateau);
+        }
+        return new Queen(color, plateau);
+    }
+
+    private String normalizePromotionChoice(String promotionPiece) {
+        if (promotionPiece == null) {
+            return "Queen";
+        }
+
+        String trimmed = promotionPiece.trim();
+        if ("Rook".equals(trimmed) || "Bishop".equals(trimmed) || "Knight".equals(trimmed) || "Queen".equals(trimmed)) {
+            return trimmed;
+        }
+        return "Queen";
+    }
+
+    public boolean canCastle(int color, boolean kingSide) {
+        int row = (color == 0) ? 7 : 0;
+        int enemyColor = (color == 0) ? 1 : 0;
+
+        Piece kingPiece = plateau.getCase(row, 4).getPiece();
+        if (!(kingPiece instanceof King) || kingPiece.hasMoved()) {
+            return false;
+        }
+
+        int rookCol = kingSide ? 7 : 0;
+        Piece rookPiece = plateau.getCase(row, rookCol).getPiece();
+        if (!(rookPiece instanceof Rook) || rookPiece.hasMoved()) {
+            return false;
+        }
+
+        int startCol = Math.min(4, rookCol) + 1;
+        int endCol = Math.max(4, rookCol) - 1;
+        for (int col = startCol; col <= endCol; col++) {
+            if (plateau.getCase(row, col).getPiece() != null) {
+                return false;
+            }
+        }
+
+        int middleCol = kingSide ? 5 : 3;
+        int targetCol = kingSide ? 6 : 2;
+        return !isSquareAttacked(row, 4, enemyColor)
+                && !isSquareAttacked(row, middleCol, enemyColor)
+                && !isSquareAttacked(row, targetCol, enemyColor);
+    }
+
+    private boolean isSquareAttacked(int row, int col, int attackerColor) {
+        Case target = plateau.getCase(row, col);
+        for (Case[] line : plateau.getPositions()) {
+            for (Case c : line) {
+                Piece piece = c.getPiece();
+                if (piece == null || piece.getColor() != attackerColor) {
+                    continue;
+                }
+
+                ArrayList<Case> attacks = piece.chargerCasesAttaquees(this, plateau);
+                if (attacks.contains(target)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public void updateObservers() {

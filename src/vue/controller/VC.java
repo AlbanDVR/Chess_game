@@ -97,6 +97,13 @@ public class VC extends JFrame implements Observer {
                 cases[r][c].addMouseListener(new MouseAdapter() {
                     @Override
                     public void mouseClicked(MouseEvent e) {
+                        if (jeu.isPendingPromotionDestination(r, c)) {
+                            String choice = askPromotionChoice();
+                            if (choice == null) {
+                                return;
+                            }
+                            jeu.setPendingPromotionChoice(choice);
+                        }
                         jeu.handleClick(r, c);
                     }
                 });
@@ -185,6 +192,9 @@ public class VC extends JFrame implements Observer {
         JMenuItem restartItem = new JMenuItem("Recommencer");
         restartItem.addActionListener(e -> jeu.restart());
         gameMenu.add(restartItem);
+        JMenuItem castleTestItem = new JMenuItem("Charger test roque");
+        castleTestItem.addActionListener(e -> jeu.loadCastleTestBoard());
+        gameMenu.add(castleTestItem);
         gameMenu.addSeparator();
         JMenuItem quitItem = new JMenuItem("Quitter");
         quitItem.addActionListener(e -> dispose());
@@ -468,6 +478,21 @@ public class VC extends JFrame implements Observer {
         if (gameId != null) {
             jeu.joinOnlineGame(gameId);
         }
+    }
+
+    private String askPromotionChoice() {
+        Object[] options = {"Queen", "Rook", "Bishop", "Knight"};
+        Object selected = JOptionPane.showInputDialog(
+                this,
+                "Choisissez la pièce de promotion :",
+                "Promotion",
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                options[0]
+        );
+
+        return (selected == null) ? null : selected.toString();
     }
 
     private static class MoveAnimation {
