@@ -449,8 +449,8 @@ public class VC extends JFrame implements Observer {
                 dispose();
             }
         }
-        else if (notification.error()) {
-            JOptionPane.showMessageDialog(this, notification.message(), notification.title(), JOptionPane.ERROR_MESSAGE);
+        else {
+            JOptionPane.showMessageDialog(this, notification.message(), notification.title(), JOptionPane.INFORMATION_MESSAGE);
         }
     }
 

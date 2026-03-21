@@ -59,7 +59,14 @@ public class Jeu extends Observable implements Runnable {
     }
 
     public void jouerPartie() throws InterruptedException {
-        while(partieTerminee()){
+        EtatPartie etat = EtatPartie.EN_COURS;
+
+        while(etat == EtatPartie.EN_COURS || etat == EtatPartie.ECHEC){
+            // S'il est en echec alors pop up
+            if (etat == EtatPartie.ECHEC) {
+                pushNotification("Attention, votre Roi est en échec !", false, "Alerte");
+            }
+
             Coup c = currentPlayer.getCoup();
             boolean isRemoteMove = applyingRemoteMove;
             while(!coupValide(c)){
@@ -70,13 +77,26 @@ public class Jeu extends Observable implements Runnable {
             if (isRemoteMove) {
                 applyingRemoteMove = false;
             }
+
+            etat = obtenirEtatActuel(currentPlayer);
         }
-        pushNotification("LA PARTIE EST TERMINEE ! Le joueur " + currentPlayer.getId() + " est MAT.", true, "Partie");
-        updateObservers();
+
+        finGame(etat);
     }
 
-    public boolean partieTerminee(){
-        return !mat(currentPlayer) && !isPat(currentPlayer);
+    public EtatPartie obtenirEtatActuel(Joueur j) {
+        if (mat(j)) return EtatPartie.MAT;
+        if (isPat(j)) return EtatPartie.PAT;
+        if (echec(j)) return EtatPartie.ECHEC;
+        return EtatPartie.EN_COURS;
+    }
+
+    public void finGame(EtatPartie etat) {
+        switch(etat) {
+            case MAT -> pushNotification("ÉCHEC ET MAT ! Victoire de l'adversaire.", false, "Fin de match");
+            case PAT -> pushNotification("MATCH NUL ! Position de PAT (plus de coups légaux).", false, "Fin de match");
+        }
+        updateObservers();
     }
 
     public void set(Coup c){
