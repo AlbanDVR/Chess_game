@@ -53,7 +53,7 @@ public class Jeu extends Observable implements Runnable {
     }
 
     public void jouerPartie() throws InterruptedException {
-        while(!mat(currentPlayer)){
+        while(partieTerminee()){
             Coup c = currentPlayer.getCoup();
             boolean isRemoteMove = applyingRemoteMove;
             while(!coupValide(c)){
@@ -70,7 +70,7 @@ public class Jeu extends Observable implements Runnable {
     }
 
     public boolean partieTerminee(){
-        return false;
+        return !mat(currentPlayer) && !isPat(currentPlayer);
     }
 
     public void set(Coup c){
@@ -179,7 +179,42 @@ public class Jeu extends Observable implements Runnable {
         // On parcourt toutes les pièces du joueur
         for (Case[] ligne : plateau.getPositions()) {
             for (Case c : ligne) {
-                if (c.getPiece() != null && c.getPiece().getColor() == j.getId() && !(c.getPiece() instanceof King)) {
+                if (c.getPiece() != null && c.getPiece().getColor() == j.getId()) {
+                    // On récupère toutes les cases accessibles
+                    ArrayList<Case> dest = c.getPiece().chargerCasesAccessible(this, this.plateau);
+
+                    // On regarde toutes les cases prometteuses
+                    for (Case destination : dest) {
+
+                        // On crée un coup fictif
+                        Coup coupCandidat = new Coup(j);
+                        coupCandidat.setDep(plateau.getCoord(c)[0], plateau.getCoord(c)[1]);
+                        coupCandidat.setArr(plateau.getCoord(destination)[0], plateau.getCoord(destination)[1]);
+
+                        // Si ce coup est valide et empêche l'échec alors, on n'est pas mat
+                        if (coupValide(coupCandidat)) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Si aucune pièce n'est prometteuse, bah c'est mat
+        return true;
+    }
+
+    public boolean isPat(Joueur j) {
+        // s'il est en échec il ne peut pas être pat
+        if (echec(j)) {
+            return false;
+        }
+
+        // 2. On vérifie s'il existe AU MOINS UN coup réellement légal
+        // On parcourt toutes les pièces du joueur
+        for (Case[] ligne : plateau.getPositions()) {
+            for (Case c : ligne) {
+                if (c.getPiece() != null && c.getPiece().getColor() == j.getId()) {
                     // On récupère toutes les cases accessibles
                     ArrayList<Case> dest = c.getPiece().chargerCasesAccessible(this, this.plateau);
 
