@@ -54,6 +54,9 @@ public class Jeu extends Observable implements Runnable {
     public void jouerPartie() throws InterruptedException {
         while(!partieTerminee()){
             Coup c = currentPlayer.getCoup();
+            while(!coupValide(c)){
+                c = currentPlayer.getCoup();
+            }
             commitMove(c, true);
         }
     }
@@ -73,7 +76,7 @@ public class Jeu extends Observable implements Runnable {
     private void commitMove(Coup c, boolean broadcastMove) {
         moveNotations.add(buildMoveNotation(c));
         setPositions(c);
-        lastPlayedMove = new Coup(c);
+        lastPlayedMove = new Coup(currentPlayer, c);
 
         if (broadcastMove && isMultiplayerConnected() && !applyingRemoteMove) {
             multiplayerClient.sendMove(c.getDep()[0], c.getDep()[1], c.getArr()[0], c.getArr()[1]);
@@ -105,7 +108,7 @@ public class Jeu extends Observable implements Runnable {
         if (casesAccessibles.contains(caseArrivee)) {
             pendingCoup.setArr(row, col);
             clearSelection();
-            set(new Coup(pendingCoup));
+            set(new Coup(currentPlayer, pendingCoup));
             return;
         }
 
@@ -141,7 +144,23 @@ public class Jeu extends Observable implements Runnable {
     }
 
     public boolean coupValide(Coup c){
-        return false;
+        // On save le plateau
+        Plateau savePlateau = this.plateau;
+
+        // On met dans notre jeu un plateau test identique au vrai
+        this.plateau = new Plateau(savePlateau);
+
+        // effectue le test
+        setPositions(c);
+
+        // On vérifie s'il est en échec
+        boolean enEchec = echec(c.getJoueur());
+        System.out.println("Test Coup: " + c.getJoueur().getId() + " | Echec après coup ? " + enEchec);
+
+        // On retourne à notre vrai plateau comme si rien ne s'était passé
+        this.plateau = savePlateau;
+
+        return !enEchec;
     }
 
     public int getMoveCount() {
@@ -152,7 +171,7 @@ public class Jeu extends Observable implements Runnable {
         if (lastPlayedMove == null) {
             return null;
         }
-        return new Coup(lastPlayedMove);
+        return new Coup(currentPlayer, lastPlayedMove   );
     }
 
     public List<String> getMoveNotations() {

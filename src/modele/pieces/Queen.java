@@ -18,6 +18,11 @@ public class Queen extends Piece {
     }
 
     @Override
+    public Piece copy(Plateau copyPlateau) {
+        return new Queen(this.getColor(), copyPlateau);
+    }
+
+    @Override
     public ArrayList<Case> chargerCasesAccessible(Jeu jeu, Plateau p) {
         return dca.getCasesAccessibles(jeu, p.getCase(this));
     }

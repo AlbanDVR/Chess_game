@@ -18,6 +18,8 @@ public abstract class Piece {
         this.dca = dca;
     }
 
+    public abstract Piece copy(Plateau copyPlateau);
+
     public String getName() {
         return name;
     }

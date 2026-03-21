@@ -12,12 +12,13 @@ public class Coup {
         this.joueur = joueur;
     }
 
-    public Coup(Coup other) {
+    public Coup(Joueur joueur, Coup other) {
         this.arr[0] = other.arr[0];
         this.arr[1] = other.arr[1];
         this.dep[0] = other.dep[0];
         this.dep[1] = other.dep[1];
         this.ready = other.ready;
+        this.joueur = joueur;
     }
 
     public void setArr(int i, int j){

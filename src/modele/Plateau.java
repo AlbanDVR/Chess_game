@@ -12,7 +12,7 @@ import modele.pieces.Rook;
 public class Plateau {
     private final Case[][] positions;
 
-    Plateau() {
+    public Plateau() {
         positions = new Case[][]{{new Case(new Rook(1, this)), new Case(new Knight(1, this)), new Case(new Bishop(1, this)), new Case(new King(1, this)), new Case(new Queen(1, this)), new Case(new Bishop(1, this)), new Case(new Knight(1, this)), new Case(new Rook(1, this))},
                 {new Case(new Pawn(1, this)), new Case(new Pawn(1, this)), new Case(new Pawn(1, this)), new Case(new Pawn(1, this)), new Case(new Pawn(1, this)), new Case(new Pawn(1, this)), new Case(new Pawn(1, this)), new Case(new Pawn(1, this))},
                 {new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null)},
@@ -21,6 +21,23 @@ public class Plateau {
                 {new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null), new Case(null)},
                 {new Case(new Pawn(0, this)), new Case(new Pawn(0, this)), new Case(new Pawn(0, this)), new Case(new Pawn(0, this)), new Case(new Pawn(0, this)), new Case(new Pawn(0, this)), new Case(new Pawn(0, this)), new Case(new Pawn(0, this))},
                 {new Case(new Rook(0, this)), new Case(new Knight(0, this)), new Case(new Bishop(0, this)), new Case(new King(0, this)), new Case(new Queen(0, this)), new Case(new Bishop(0, this)), new Case(new Knight(0, this)), new Case(new Rook(0, this))}};
+    }
+
+    // Constructeur copie
+    public Plateau(Plateau data) {
+        this.positions = new Case[8][8];
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                // On récup la pièce d'origine
+                Piece pieceOrigine = data.getPositions()[i][j].getPiece();
+
+                // On copie la pièce d'origine
+                Piece copyPiece = (pieceOrigine == null) ? null : pieceOrigine.copy(this);
+
+                // Et on la fout dans le plateau copié
+                this.positions[i][j] = new Case(copyPiece);
+            }
+        }
     }
 
     public Case[][] getPositions() {

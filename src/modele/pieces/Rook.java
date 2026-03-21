@@ -17,6 +17,11 @@ public class Rook extends Piece {
     }
 
     @Override
+    public Piece copy(Plateau copyPlateau) {
+        return new Rook(this.getColor(), copyPlateau);
+    }
+
+    @Override
     public ArrayList<Case> chargerCasesAccessible(Jeu jeu, Plateau p) {
         return dca.getCasesAccessibles(jeu, p.getCase(this));
     }
