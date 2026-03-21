@@ -1,13 +1,16 @@
 package modele;
 
 public class Coup {
+    private Joueur joueur;
 
     private int[] arr = new int[2];
     private int[] dep = new int[2];
 
     public boolean ready = false;
 
-    public Coup(){}
+    public Coup(Joueur joueur){
+        this.joueur = joueur;
+    }
 
     public Coup(Coup other) {
         this.arr[0] = other.arr[0];
@@ -34,6 +37,10 @@ public class Coup {
 
     public int[] getDep(){
         return this.dep;
+    }
+
+    public Joueur getJoueur(){
+        return this.joueur;
     }
 
     public void resetCoup(){

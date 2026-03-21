@@ -17,7 +17,7 @@ public class Jeu extends Observable implements Runnable {
     private Joueur currentPlayer;
     private Plateau plateau;
     protected Coup nextC;
-    private final Coup pendingCoup = new Coup();
+    private Coup pendingCoup;
     private ArrayList<Case> casesAccessibles = new ArrayList<>();
     private final ArrayList<String> moveNotations = new ArrayList<>();
     private final ArrayList<Piece> capturedPieces = new ArrayList<>();
@@ -37,6 +37,7 @@ public class Jeu extends Observable implements Runnable {
         liste[1] = new Joueur(1, this);
         gameStartTime = System.currentTimeMillis();
         currentPlayer = liste[1];
+        pendingCoup = new Coup(currentPlayer);
     }
 
     @Override
@@ -191,7 +192,8 @@ public class Jeu extends Observable implements Runnable {
 
             @Override
             public void onRemoteMove(int fromRow, int fromCol, int toRow, int toCol) {
-                Coup remoteMove = new Coup();
+                Joueur adversaire = (localPlayerColor.getId() == 0) ? liste[1] : liste[0];
+                Coup remoteMove = new Coup(adversaire);
                 remoteMove.setDep(fromRow, fromCol);
                 remoteMove.setArr(toRow, toCol);
                 applyingRemoteMove = true;
@@ -364,12 +366,8 @@ public class Jeu extends Observable implements Runnable {
     }
 
     public Joueur getJoueurSuivant(){
-        if(currentPlayer.getId() == 0){
-            this.currentPlayer = liste[1];
-        }
-        else {
-            this.currentPlayer = liste[0];
-        }
+        this.currentPlayer = (this.currentPlayer.getId() == 0) ? liste[1] : liste[0];
+        this.pendingCoup = new Coup(this.currentPlayer);
         return currentPlayer;
     }
 
@@ -424,5 +422,7 @@ public class Jeu extends Observable implements Runnable {
         return false;
     }
 
-
+    public boolean coupValide(Coup c){
+        return false;
+    }
 }
