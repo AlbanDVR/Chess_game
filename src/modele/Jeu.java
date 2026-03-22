@@ -12,6 +12,7 @@ import reseau.MultiplayerEventListener;
 import reseau.WebSocketMultiplayerClient;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Observable;
 
@@ -29,6 +30,7 @@ public class Jeu extends Observable implements Runnable {
 
     private final ArrayList<String> moveNotations = new ArrayList<>();
     private final ArrayList<Piece> capturedPieces = new ArrayList<>();
+    private final HashMap<String, Integer> positionHistory = new HashMap<>();
     private Coup lastPlayedMove;
     private long gameStartTime;
     private String playerName = "Joueur";
@@ -41,13 +43,14 @@ public class Jeu extends Observable implements Runnable {
     private volatile boolean applyingRemoteMove;
     private Joueur localPlayerColor = liste[1];
 
-    public Jeu(){
+    public Jeu() {
         plateau = new Plateau();
         liste[0] = new Joueur(0, this);
         liste[1] = new Joueur(1, this);
         gameStartTime = System.currentTimeMillis();
         currentPlayer = liste[0];
         pendingCoup = new Coup(currentPlayer);
+        generateBoardSignature();
     }
 
     @Override
@@ -67,7 +70,7 @@ public class Jeu extends Observable implements Runnable {
     public void jouerPartie() throws InterruptedException {
         EtatPartie etat = EtatPartie.EN_COURS;
 
-        while(etat == EtatPartie.EN_COURS || etat == EtatPartie.ECHEC){
+        while (etat == EtatPartie.EN_COURS || etat == EtatPartie.ECHEC) {
             // S'il est en echec alors pop up
             if (etat == EtatPartie.ECHEC) {
                 pushNotification("Attention, votre Roi est en échec !", false, "Alerte");
@@ -75,7 +78,7 @@ public class Jeu extends Observable implements Runnable {
 
             Coup c = currentPlayer.getCoup();
             boolean isRemoteMove = applyingRemoteMove;
-            while(!coupValide(c)){
+            while (!coupValide(c)) {
                 c = currentPlayer.getCoup();
                 isRemoteMove = applyingRemoteMove;
             }
@@ -91,6 +94,7 @@ public class Jeu extends Observable implements Runnable {
     }
 
     public EtatPartie obtenirEtatActuel(Joueur j) {
+        if (isRepetitionPosition()) return EtatPartie.REPETITION_POSITION;
         if (mat(j)) return EtatPartie.MAT;
         if (isPat(j)) return EtatPartie.PAT;
         if (echec(j)) return EtatPartie.ECHEC;
@@ -98,17 +102,41 @@ public class Jeu extends Observable implements Runnable {
     }
 
     public void finGame(EtatPartie etat) {
-        switch(etat) {
+        switch (etat) {
             case MAT -> pushNotification("ÉCHEC ET MAT ! Victoire de l'adversaire.", false, "Fin de match");
             case PAT -> pushNotification("MATCH NUL ! Position de PAT (plus de coups légaux).", false, "Fin de match");
+            case REPETITION_POSITION ->
+                    pushNotification("MATCH NUL ! Répétition de position 3 fois.", false, "Fin de match");
         }
         updateObservers();
     }
 
-    public void set(Coup c){
+    private String generateBoardSignature() {
+        StringBuilder sb = new StringBuilder();
+        for (Case[] row : plateau.getPositions()) {
+            for (Case c : row) {
+                Piece piece = c.getPiece();
+                if (piece == null) {
+                    sb.append(".");
+                } else {
+                    sb.append(piece.getColor()).append(piece.getName().charAt(0));
+                }
+            }
+        }
+        return sb.toString();
+    }
+
+    private boolean isRepetitionPosition() {
+        String signature = generateBoardSignature();
+        int count = positionHistory.getOrDefault(signature, 0) + 1;
+        positionHistory.put(signature, count);
+        return count >= 3;
+    }
+
+    public void set(Coup c) {
         nextC = c;
 
-        synchronized (this){
+        synchronized (this) {
             this.notifyAll();
         }
     }
@@ -117,6 +145,7 @@ public class Jeu extends Observable implements Runnable {
         moveNotations.add(buildMoveNotation(c));
         setPositions(c);
         lastPlayedMove = new Coup(currentPlayer, c);
+        generateBoardSignature();
 
         if (broadcastMove && isMultiplayerConnected() && !applyingRemoteMove) {
             multiplayerClient.sendMove(c.getDep()[0], c.getDep()[1], c.getArr()[0], c.getArr()[1], c.getPromotionPiece());
@@ -161,119 +190,74 @@ public class Jeu extends Observable implements Runnable {
         updateObservers();
     }
 
-    public boolean echec(Joueur j){
-        // On prend l'adversaire et on calcule tous ces coups possibles
+    public boolean echec(Joueur j) {
         Joueur adversaire = j.getId() == 0 ? liste[1] : liste[0];
         ArrayList<Case> cases = adversaire.chargerListCasesAccessibles();
+        Case caseRoi = findKing(j);
 
-        // On cherche la case du roi du joueur
-        Case caseRoi = null;
-        for(Case[] row : plateau.getPositions()){
-            for(Case c : row){
-                if(c.getPiece() != null && c.getPiece() instanceof King && c.getPiece().getColor() == j.getId()){
-                    caseRoi = c;
-                    break;
-                }
-            }
-        }
+        if (caseRoi == null) return false;
 
-        // On regarde si la case du roi n'est pas dans les cases attaquables
         int[] coordKing = plateau.getCoord(caseRoi);
-        for(Case caseAtt : cases) {
+        for (Case caseAtt : cases) {
             int[] coordAtt = plateau.getCoord(caseAtt);
-            if(coordKing[0] == coordAtt[0] && coordKing[1] == coordAtt[1]){
+            if (coordKing[0] == coordAtt[0] && coordKing[1] == coordAtt[1]) {
                 return true;
             }
         }
         return false;
     }
 
-    public boolean coupValide(Coup c){
-        // On save le plateau
+    private Case findKing(Joueur j) {
+        for (Case[] row : plateau.getPositions()) {
+            for (Case c : row) {
+                if (c.getPiece() != null && c.getPiece() instanceof King && c.getPiece().getColor() == j.getId()) {
+                    return c;
+                }
+            }
+        }
+        return null;
+    }
+
+    public boolean coupValide(Coup c) {
         Plateau savePlateau = this.plateau;
-
-        // On met dans notre jeu un plateau test identique au vrai
         this.plateau = new Plateau(savePlateau);
-
-        // effectue le test sans polluer les captures reelles
         applyMove(c, false);
-
-        // On vérifie s'il est en échec
         boolean enEchec = echec(c.getJoueur());
-
-        // On retourne à notre vrai plateau comme si rien ne s'était passé
         this.plateau = savePlateau;
-
         return !enEchec;
     }
 
     public boolean mat(Joueur j) {
-        // s'il n'est pas en échec il ne peut pas être mat
-        if(!echec(j)) {
+        if (!echec(j)) {
             return false;
         }
-
-        // On parcourt toutes les pièces du joueur
-        for (Case[] ligne : plateau.getPositions()) {
-            for (Case c : ligne) {
-                if (c.getPiece() != null && c.getPiece().getColor() == j.getId()) {
-                    // On récupère toutes les cases accessibles
-                    ArrayList<Case> dest = c.getPiece().chargerCasesAccessible(this, this.plateau);
-
-                    // On regarde toutes les cases prometteuses
-                    for (Case destination : dest) {
-
-                        // On crée un coup fictif
-                        Coup coupCandidat = new Coup(j);
-                        coupCandidat.setDep(plateau.getCoord(c)[0], plateau.getCoord(c)[1]);
-                        coupCandidat.setArr(plateau.getCoord(destination)[0], plateau.getCoord(destination)[1]);
-
-                        // Si ce coup est valide et empêche l'échec alors, on n'est pas mat
-                        if (coupValide(coupCandidat)) {
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
-
-        // Si aucune pièce n'est prometteuse, bah c'est mat
-        return true;
+        return !hasLegalMove(j);
     }
 
     public boolean isPat(Joueur j) {
-        // s'il est en échec il ne peut pas être pat
         if (echec(j)) {
             return false;
         }
+        return !hasLegalMove(j);
+    }
 
-        // 2. On vérifie s'il existe AU MOINS UN coup réellement légal
-        // On parcourt toutes les pièces du joueur
+    private boolean hasLegalMove(Joueur j) {
         for (Case[] ligne : plateau.getPositions()) {
             for (Case c : ligne) {
                 if (c.getPiece() != null && c.getPiece().getColor() == j.getId()) {
-                    // On récupère toutes les cases accessibles
                     ArrayList<Case> dest = c.getPiece().chargerCasesAccessible(this, this.plateau);
-
-                    // On regarde toutes les cases prometteuses
                     for (Case destination : dest) {
-
-                        // On crée un coup fictif
                         Coup coupCandidat = new Coup(j);
                         coupCandidat.setDep(plateau.getCoord(c)[0], plateau.getCoord(c)[1]);
                         coupCandidat.setArr(plateau.getCoord(destination)[0], plateau.getCoord(destination)[1]);
-
-                        // Si ce coup est valide et empêche l'échec alors, on n'est pas mat
                         if (coupValide(coupCandidat)) {
-                            return false;
+                            return true;
                         }
                     }
                 }
             }
         }
-
-        // Si aucune pièce n'est prometteuse, bah c'est mat
-        return true;
+        return false;
     }
 
     public int getMoveCount() {
@@ -285,10 +269,6 @@ public class Jeu extends Observable implements Runnable {
             return null;
         }
         return new Coup(lastPlayedMove.getJoueur(), lastPlayedMove);
-    }
-
-    public List<String> getMoveNotations() {
-        return new ArrayList<>(moveNotations);
     }
 
     public String getPlayerName() {
@@ -484,6 +464,7 @@ public class Jeu extends Observable implements Runnable {
         plateau = new Plateau();
         moveNotations.clear();
         capturedPieces.clear();
+        positionHistory.clear();
         lastPlayedMove = null;
         pendingCoup.resetCoup();
         pendingPromotionChoice = null;
@@ -491,42 +472,13 @@ public class Jeu extends Observable implements Runnable {
         currentPlayer = liste[0];
         localPlayerColor = liste[0];
         gameStartTime = System.currentTimeMillis();
+        generateBoardSignature();
 
-        // Relance le thread pour que la boucle JouerPartie redémarre
         new Thread(this).start();
 
         updateObservers();
     }
 
-    public void loadCastleTestBoard() {
-        for (Case[] row : plateau.getPositions()) {
-            for (Case c : row) {
-                c.setPiece(null);
-            }
-        }
-
-        // White pieces for immediate king/queen side castling tests.
-        plateau.getCase(7, 4).setPiece(new King(0, plateau));
-        plateau.getCase(7, 0).setPiece(new Rook(0, plateau));
-        plateau.getCase(7, 7).setPiece(new Rook(0, plateau));
-
-        // Black pieces kept only to preserve both kings on board.
-        plateau.getCase(0, 4).setPiece(new King(1, plateau));
-        plateau.getCase(0, 0).setPiece(new Rook(1, plateau));
-        plateau.getCase(0, 7).setPiece(new Rook(1, plateau));
-
-        moveNotations.clear();
-        capturedPieces.clear();
-        lastPlayedMove = null;
-        pendingCoup.resetCoup();
-        pendingPromotionChoice = null;
-        casesAccessibles.clear();
-        currentPlayer = liste[0];
-        gameStartTime = System.currentTimeMillis();
-
-        pushNotification("Plateau de test roque charge.", false);
-        updateObservers();
-    }
 
     private String buildMoveNotation(Coup c) {
         int depCol = c.getDep()[1];
@@ -537,8 +489,7 @@ public class Jeu extends Observable implements Runnable {
             return arrCol > depCol ? "O-O" : "O-O-O";
         }
 
-        Case dep = plateau.getCase(c.getDep()[0], c.getDep()[1]);
-        Piece movedPiece = dep.getPiece();
+        Piece movedPiece = plateau.getCase(c.getDep()[0], c.getDep()[1]).getPiece();
         if (movedPiece == null) {
             return "";
         }
@@ -578,10 +529,7 @@ public class Jeu extends Observable implements Runnable {
 
     private String promotionToNotation(String promotionPiece) {
         String normalized = normalizePromotionChoice(promotionPiece);
-        if ("Knight".equals(normalized)) {
-            return "N";
-        }
-        return String.valueOf(normalized.charAt(0));
+        return "Knight".equals(normalized) ? "N" : String.valueOf(normalized.charAt(0));
     }
 
     private String piecePrefix(Piece piece) {
@@ -655,7 +603,7 @@ public class Jeu extends Observable implements Runnable {
         return plateau;
     }
 
-    public void switchJoueur(){
+    public void switchJoueur() {
         this.currentPlayer = (this.currentPlayer.getId() == 0) ? liste[1] : liste[0];
     }
 
@@ -663,13 +611,13 @@ public class Jeu extends Observable implements Runnable {
         return currentPlayer;
     }
 
-    public void setPositions(Coup c){
+    public void setPositions(Coup c) {
         applyMove(c, true);
     }
 
     private void applyMove(Coup c, boolean trackCapture) {
-        Case dep = this.plateau.getCase(c.getDep()[0],  c.getDep()[1]);
-        Case arr =  this.plateau.getCase(c.getArr()[0],  c.getArr()[1]);
+        Case dep = this.plateau.getCase(c.getDep()[0], c.getDep()[1]);
+        Case arr = this.plateau.getCase(c.getArr()[0], c.getArr()[1]);
         Piece movedPiece = dep.getPiece();
         if (movedPiece == null) {
             return;
@@ -707,16 +655,12 @@ public class Jeu extends Observable implements Runnable {
 
     public Piece createPromotionPiece(String promotionPiece, int color) {
         String normalized = normalizePromotionChoice(promotionPiece);
-        if ("Rook".equals(normalized)) {
-            return new Rook(color, plateau);
-        }
-        if ("Bishop".equals(normalized)) {
-            return new Bishop(color, plateau);
-        }
-        if ("Knight".equals(normalized)) {
-            return new Knight(color, plateau);
-        }
-        return new Queen(color, plateau);
+        return switch (normalized) {
+            case "Rook" -> new Rook(color, plateau);
+            case "Bishop" -> new Bishop(color, plateau);
+            case "Knight" -> new Knight(color, plateau);
+            default -> new Queen(color, plateau);
+        };
     }
 
     private String normalizePromotionChoice(String promotionPiece) {
@@ -724,11 +668,10 @@ public class Jeu extends Observable implements Runnable {
             return "Queen";
         }
 
-        String trimmed = promotionPiece.trim();
-        if ("Rook".equals(trimmed) || "Bishop".equals(trimmed) || "Knight".equals(trimmed) || "Queen".equals(trimmed)) {
-            return trimmed;
-        }
-        return "Queen";
+        return switch (promotionPiece.trim()) {
+            case "Rook", "Bishop", "Knight", "Queen" -> promotionPiece.trim();
+            default -> "Queen";
+        };
     }
 
     public boolean canCastle(int color, boolean kingSide) {
@@ -756,9 +699,7 @@ public class Jeu extends Observable implements Runnable {
 
         int middleCol = kingSide ? 5 : 3;
         int targetCol = kingSide ? 6 : 2;
-        return !isSquareAttacked(row, 4, enemyColor)
-                && !isSquareAttacked(row, middleCol, enemyColor)
-                && !isSquareAttacked(row, targetCol, enemyColor);
+        return !isSquareAttacked(row, 4, enemyColor) && !isSquareAttacked(row, middleCol, enemyColor) && !isSquareAttacked(row, targetCol, enemyColor);
     }
 
     private boolean isSquareAttacked(int row, int col, int attackerColor) {
@@ -804,7 +745,5 @@ public class Jeu extends Observable implements Runnable {
         pendingNotification = new UiNotification(message.trim(), error, title);
     }
 
-    public record UiNotification(String message, boolean error, String title) {
-    }
 
 }

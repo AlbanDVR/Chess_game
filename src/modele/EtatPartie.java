@@ -4,5 +4,6 @@ public enum EtatPartie {
     EN_COURS,
     ECHEC,
     MAT,
-    PAT
+    PAT,
+    REPETITION_POSITION
 }

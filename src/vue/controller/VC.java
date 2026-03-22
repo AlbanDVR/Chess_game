@@ -4,6 +4,7 @@ import modele.Case;
 import modele.Coup;
 import modele.Jeu;
 import modele.Joueur;
+import modele.UiNotification;
 import modele.pieces.Piece;
 import vue.theme.Theme;
 import vue.theme.Themes;
@@ -192,9 +193,6 @@ public class VC extends JFrame implements Observer {
         JMenuItem restartItem = new JMenuItem("Recommencer");
         restartItem.addActionListener(e -> jeu.restart());
         gameMenu.add(restartItem);
-        JMenuItem castleTestItem = new JMenuItem("Charger test roque");
-        castleTestItem.addActionListener(e -> jeu.loadCastleTestBoard());
-        gameMenu.add(castleTestItem);
         gameMenu.addSeparator();
         JMenuItem quitItem = new JMenuItem("Quitter");
         quitItem.addActionListener(e -> dispose());
@@ -427,7 +425,7 @@ public class VC extends JFrame implements Observer {
     }
 
     private void showPendingNotification() {
-        Jeu.UiNotification notification = jeu.consumePendingNotification();
+        UiNotification notification = jeu.consumePendingNotification();
         if (notification == null) {
             return;
         }
@@ -495,53 +493,5 @@ public class VC extends JFrame implements Observer {
         return (selected == null) ? null : selected.toString();
     }
 
-    private static class MoveAnimation {
-        private final int toRow;
-        private final int toCol;
-        private final Point from;
-        private final Point to;
-        private final ImageIcon icon;
-        private final long startMs;
-
-        private MoveAnimation(int toRow, int toCol, Point from, Point to, ImageIcon icon) {
-            this.toRow = toRow;
-            this.toCol = toCol;
-            this.from = from;
-            this.to = to;
-            this.icon = icon;
-            this.startMs = System.currentTimeMillis();
-        }
-    }
-
-    private static class MoveOverlay extends JComponent {
-        private ImageIcon icon;
-        private int x;
-        private int y;
-
-        private MoveOverlay() {
-            setOpaque(false);
-        }
-
-        private void update(ImageIcon icon, int x, int y) {
-            this.icon = icon;
-            this.x = x;
-            this.y = y;
-            repaint();
-        }
-
-        private void clear() {
-            icon = null;
-            setVisible(false);
-            repaint();
-        }
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            if (icon != null) {
-                g.drawImage(icon.getImage(), x, y, null);
-            }
-        }
-    }
 
 }
