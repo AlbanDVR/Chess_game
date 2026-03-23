@@ -73,7 +73,7 @@ public class Jeu extends Observable implements Runnable {
         while (etat == EtatPartie.EN_COURS || etat == EtatPartie.ECHEC) {
             // S'il est en echec alors pop up
             if (etat == EtatPartie.ECHEC) {
-                pushNotification("Attention, votre Roi est en échec !", false, "Alerte");
+                pushCheckNotificationForCurrentPlayer();
             }
 
             Coup c = currentPlayer.getCoup();
@@ -91,6 +91,16 @@ public class Jeu extends Observable implements Runnable {
         }
 
         finGame(etat);
+    }
+
+    private void pushCheckNotificationForCurrentPlayer() {
+        boolean localKingInCheck = !isMultiplayerConnected()
+                || (localPlayerColor != null && currentPlayer.getId() == localPlayerColor.getId());
+
+        String message = localKingInCheck
+                ? "Attention, votre Roi est en echec !"
+                : "Le Roi adverse est en echec.";
+        pushNotification(message, false, "Alerte");
     }
 
     public EtatPartie obtenirEtatActuel(Joueur j) {
@@ -119,7 +129,7 @@ public class Jeu extends Observable implements Runnable {
                 if (piece == null) {
                     sb.append(".");
                 } else {
-                    sb.append(piece.getColor()).append(piece.getName().charAt(0));
+                    sb.append(piece.getColor()).append(piece.getName(), 0, 2);
                 }
             }
         }
@@ -145,7 +155,6 @@ public class Jeu extends Observable implements Runnable {
         moveNotations.add(buildMoveNotation(c));
         setPositions(c);
         lastPlayedMove = new Coup(currentPlayer, c);
-        generateBoardSignature();
 
         if (broadcastMove && isMultiplayerConnected() && !applyingRemoteMove) {
             multiplayerClient.sendMove(c.getDep()[0], c.getDep()[1], c.getArr()[0], c.getArr()[1], c.getPromotionPiece());
@@ -277,10 +286,6 @@ public class Jeu extends Observable implements Runnable {
 
     public String getOpponentName() {
         return opponentName;
-    }
-
-    public String getMultiplayerStatus() {
-        return multiplayerStatus;
     }
 
     public String getGameDisplayLabel() {
@@ -447,10 +452,6 @@ public class Jeu extends Observable implements Runnable {
             }
         }
         return column;
-    }
-
-    public List<Piece> getCapturedPieces() {
-        return new ArrayList<>(capturedPieces);
     }
 
     public long getElapsedTime() {

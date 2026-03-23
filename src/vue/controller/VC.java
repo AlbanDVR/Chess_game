@@ -22,12 +22,10 @@ import javax.swing.JScrollPane;
 import javax.swing.BoxLayout;
 import javax.swing.Box;
 import javax.swing.Timer;
-import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -446,8 +444,7 @@ public class VC extends JFrame implements Observer {
             } else if (n == JOptionPane.NO_OPTION) {
                 dispose();
             }
-        }
-        else {
+        } else {
             JOptionPane.showMessageDialog(this, notification.message(), notification.title(), JOptionPane.INFORMATION_MESSAGE);
         }
     }
